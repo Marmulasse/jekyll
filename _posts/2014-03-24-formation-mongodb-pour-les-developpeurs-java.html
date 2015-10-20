@@ -1,0 +1,183 @@
+---
+layout: post
+title: Formation MongoDB pour les développeurs JAVA
+date: 2014-03-24 12:32:45.000000000 +01:00
+type: post
+published: true
+status: publish
+categories:
+- Programmation
+tags:
+- mongodb
+meta:
+  _activeshortener: tiny
+  _edit_last: '1'
+  sfw_pwd: 0LfIz7xCdEOn
+  _twitterrelated_short_url: http://tinyurl.com/ohohkqs
+  _twitterrelated_short_urlHash: d2562bc207512d5f3e33577af7f03ea7
+author:
+  login: mickael barroux
+  email: mickael.barroux@arolla.fr
+  display_name: Mickaël Barroux
+  first_name: Mickaël
+  last_name: Barroux
+---
+<p><img class="aligncenter" id="il_fi" style="padding-right: 8px; padding-top: 8px; padding-bottom: 8px;" alt="" src="{{ site.baseurl }}/assets/mongodb-nosql-logo.png" width="204" height="73" /></p>
+<p style="text-align: justify;">Dès que j’ai eu vent d’une formation initiale à MongoDB pour les développeurs JAVA, je n’ai pas hésité et me suis inscrit. L’équipe MongoDB propose cette formation en ligne, d’une durée de 7 semaines, sous forme de vidéos qui permettent d’appréhender cette technologie NO-SQL pas à pas, y compris pour les débutants. A l’issue de ces 7 semaines, une certification nous est décernée si nous atteignons un score minimum de 65% qui se décompose ainsi : chaque semaine voit une série de devoirs à rendre (50% de la note) et il y a un examen final à la fin de la session comptant pour l’autre moitié de la note.</p>
+<p style="text-align: justify;">Ces cours se décomposent donc en 7 grandes parties, que je vais détailler dans la suite de l’article.</p>
+<p style="text-align: justify;"><a href="https://education.10gen.com/courses/10gen/M101J/2013_Spring/about">https://education.10gen.com/courses/10gen/M101J/2013_Spring/about</a></p>
+<h1 style="text-align: justify;">Partie 1 : Introduction</h1>
+<p style="text-align: justify;">Cette première partie permet de présenter la technologie MongoDB, un système de base de données orienté documents, c’est-à-dire qu’il faut oublier le système relationnel des bases de données classiques style Oracle ou MySQL. Les bases de données <a href="http://fr.wikipedia.org/wiki/NoSQL">No-SQL</a> contiennent des « collections » (qui peuvent être assimilées à des tables dans le monde relationnel) et chaque collection contient des « documents » (lignes dans le monde relationnel).</p>
+<p style="text-align: justify;">Ce système est plus souple en termes de structure, puisque les documents sont structurés en <a href="http://fr.wikipedia.org/wiki/JavaScript_Object_Notation">JSON</a> (JavaScript Object Notation) et qu’il peut y avoir des documents structurés différemment au sein d’une même collection (champs en plus, différents types de valeurs pour un même champ…). L’utilisation de ce langage permet également d’écrire des scripts en JavaScript à exécuter sur l’instance de base de données (il faut oublier le SQL pour ce type de base de données).</p>
+<p style="text-align: justify;">Un service (« daemon ») est exécuté sur le serveur de base de données (« mongod ») et il existe différents clients pour exécuter des requêtes. Ce cours permet de nous intéresser à deux d’entre eux : le shell « mongo », qui permet de requêter en ligne de commande, et un driver JAVA qui permet d’utiliser cette base de données au sein d’une application JAVA.</p>
+<p style="text-align: justify;">Les commandes principales du shell pour se connecter à une base, utiliser une collection sont dévoilées dans ce premier chapitre.</p>
+<h1 style="text-align: justify;">Partie 2 : CRUD</h1>
+<p style="text-align: justify;">Les opérations de base (CRUD = Create, Retrieve, Update, Delete) sont présentées lors de la 2<sup>ème</sup> semaine de formation. On apprend à manipuler les différents types de requêtes, via le shell ou le driver JAVA fourni.</p>
+<p style="text-align: justify;">Il faut savoir que chaque document au sein d’une collection a un identifiant unique, par défaut un champ de type <i>ObjectId</i> généré par Mongo. On peut cependant très bien utiliser un ID de notre Système d’Information à la place (ex. numéro de sécurité sociale pour un individu par exemple).</p>
+<p style="text-align: justify;">La commande <i>find()</i> permet de retrouver une liste de documents au sein d’une collection (<i>findOne()</i> permet de n’en prendre qu’un seul, utile pour voir la structure des documents). Il suffit ensuite de combiner cette commande avec des filtres dont la syntaxe est propre à Mongo et utilise la notation JSON.</p>
+<p style="text-align: justify;"><span style="text-decoration: underline;">Exemples</span> :</p>
+<p style="text-align: justify;">db.people.find({"firstname" : "John"}) permet de lister l’ensemble des personnes se prénommant « John »</p>
+<p style="text-align: justify;">db.people.find({"age" : {$lte : 25} }) liste les personnes qui ont plus de 25 ans.</p>
+<p style="text-align: justify;">On peut bien sûr combiner ces critères avec les opérateurs booléens courants <i>$or</i>, <i>$and</i> et d’autres opérateurs plus complexes. Pour les connaisseurs, on peut même définir ses propres opérateurs en Javascript et les intégrer à Mongo.</p>
+<p style="text-align: justify;">Dans cette partie, on appréhende également la notion de tableaux (arrays) qui sont un ensemble de documents. Un document est composé de propriétés de base (chaîne de caractères, nombre, date), de sous-documents (champ composé d’autres propriétés) et de tableaux (liste de documents).</p>
+<p style="text-align: justify;"><span style="text-decoration: underline;">Exemple d’objet complexe : </span></p>
+<p style="text-align: justify;">{</p>
+<p style="text-align: justify;">       "firstname": "Mickael",</p>
+<p style="text-align: justify;">       "lastname" : "Barroux",</p>
+<p style="text-align: justify;">       "birth_date" : {</p>
+<p style="text-align: justify;">             "$date" : 616651200000</p>
+<p style="text-align: justify;">       },</p>
+<p style="text-align: justify;">       "address" : {</p>
+<p style="text-align: justify;">             "street": "5, Main Street",</p>
+<p style="text-align: justify;">             "state": "California",</p>
+<p style="text-align: justify;">             "city": "Los Angeles"</p>
+<p style="text-align: justify;">             "country": "US"</p>
+<p style="text-align: justify;">       },</p>
+<p style="text-align: justify;">       "phone_number" : [</p>
+<p style="text-align: justify;">             { "0102030405" },</p>
+<p style="text-align: justify;">             { "0203040506" },</p>
+<p style="text-align: justify;">       ]</p>
+<p style="text-align: justify;">}</p>
+<p style="text-align: justify;">Les commandes d’insertion de document (<i>insert</i>) et de suppression de document (<i>remove</i>) sont également passées en revue.</p>
+<p style="text-align: justify;">La mise à jour de document est un peu plus compliquée à appréhender car elle utilise un critère permettant de sélectionner les documents à mettre à jour, et enfin une commande pour savoir comment les mettre à jour (modification ou ajout de propriété : <i>$set</i>, ajout d’une valeur à un tableau : <i>$push</i> ou <i>$addToSet</i>).</p>
+<p style="text-align: justify;"><span style="text-decoration: underline;">Exemple de mise à jour</span> (modifie la ville de l’utilisateur dont le nom est « Barroux » et ajoute un nouveau numéro de téléphone) :</p>
+<p style="text-align: justify;">db.people.update(</p>
+<p style="text-align: justify;">       { "lastname": "Barroux" },</p>
+<p style="text-align: justify;">       {</p>
+<p style="text-align: justify;">             $set: { "address.city": "Irvine" },</p>
+<p style="text-align: justify;">             $push: {</p>
+<p style="text-align: justify;">phone_numbers: { "0605040302" }</p>
+<p style="text-align: justify;">             }</p>
+<p style="text-align: justify;">       }</p>
+<p style="text-align: justify;">)</p>
+<p style="text-align: justify;">D’autres commandes de bases sont présentées permettant de compter le nombre de documents (<i>count</i>), de trier une liste (<i>sort</i>), de passer certains documents (<i>skip</i>) et de limiter le nombre de résultats (<i>limit</i>). Ils peuvent être chaînés à une requête <i>find()</i>.</p>
+<h1 style="text-align: justify;">Partie 3 : Schema design</h1>
+<p style="text-align: justify;">Cette partie permet de se poser des questions plus fonctionnelles et plus haut niveau sur l’application que l’on souhaite implémenter. En effet, il est nécessaire de réfléchir à la modélisation du schéma de notre application en amont. Cette réflexion est différente quand on implémente le schéma avec MongoDB par rapport à ce qu’on a l’habitude de faire avec des SGBD classiques.</p>
+<p style="text-align: justify;">Par exemple dans les cas les plus courants du monde relationnel, il est recommandé d’utiliser la 3<sup>ème</sup> forme normale (<a href="http://fr.wikipedia.org/wiki/Forme_normale_(bases_de_donn%C3%A9es_relationnelles)#3FN_.E2.80.93_Troisi.C3.A8me_forme_normale">3FN</a>) ou la forme normale de Boyce-Codd (<a href="http://fr.wikipedia.org/wiki/Forme_normale_(bases_de_donn%C3%A9es_relationnelles)#FNBC_.E2.80.93_Forme_normale_de_Boyce-Codd">FNBC</a>) afin d’éviter la redondance des données. Toutes les propriétés sont définies une seule fois et on référence ensuite toutes ces données à l’aide d’une clé étrangère composée le plus souvent à partir d’un ID généré.</p>
+<p style="text-align: justify;">En MongoDB, on essaie de conserver ces règles également mais on est souvent amené à adapter davantage le schéma à la façon dont il est utilisé par l’application.</p>
+<p style="text-align: justify;">Je m’explique : selon la façon et la fréquence à laquelle on va accéder en lecture à certaines données, on peut choisir de les inclure en intégralité dans une collection. On perd donc ce principe de « non-redondance » pour optimiser les requêtes de chargement, qui n’ont désormais plus besoin de faire des jointures dans tous les sens pour récupérer les données à partir des ID qui définissent les clés étrangères (<a href="http://fr.wikipedia.org/wiki/Cl%C3%A9_%C3%A9trang%C3%A8re">foreign key</a>).</p>
+<p style="text-align: justify;">A noter qu’il n’existe en MongoDB aucune jointure ni clé étrangère. Il n’y a même aucune contrainte sur les collections, mise à part les contraintes d’unicité, qui garantissent qu’une valeur est unique sur la collection (utilisé en interne notamment pour l’ObjectID qui est la clé primaire (<a href="http://fr.wikipedia.org/wiki/Cl%C3%A9_primaire">primary key</a>) des documents par défaut).</p>
+<p style="text-align: justify;">MongoDB n'est pas transactionnel et ne permet pas l'écriture <a href="http://fr.wikipedia.org/wiki/Propri%C3%A9t%C3%A9s_ACID">ACID</a> d'un ensemble cohérent de données. Il sacrifie cette contrainte issue du monde relationnel au profit d’une haute disponibilité des données. Pour plus d’informations à ce sujet : <a href="http://css.dzone.com/articles/how-acid-mongodb">How ACID is MongoDB ?</a></p>
+<p style="text-align: justify;"><span style="text-decoration: underline;">Exemple</span> :</p>
+<p style="text-align: justify;">Imaginons un blog contenant des posts, chaque post contenant des commentaires.</p>
+<p style="text-align: justify;">En base de données relationnelle, on aurait un schéma de ce type :</p>
+<p style="text-align: justify;"><img alt="" src="{{ site.baseurl }}/assets/wFMYxst9VKyMgAAAABJRU5ErkJggg==" /></p>
+<p style="text-align: justify;">Pour récupérer la liste des derniers posts du blog, on doit donc récupérer le contenu de la table <i>posts</i>, leurs commentaires associés en faisant 2 jointures (<i>posts_comments</i> et <i>comments</i>) et si on veut leur auteur on doit faire une 3<sup>ème</sup> jointure sur la table <i>authors</i>.</p>
+<p style="text-align: justify;">Avec MongoDB, on va créer des documents qui contiennent un tableau de commentaires (dénormalisation) comme suit :</p>
+<p style="text-align: justify;">{</p>
+<p style="text-align: justify;">       "_id": { "$oid" : "5143ddf3bcf1bf4ab37d9c6d" },</p>
+<p style="text-align: justify;">       "body": "Je suis un super post !",</p>
+<p style="text-align: justify;">       "post_date" : { "$date" : 1363402227874 },</p>
+<p style="text-align: justify;">       "comments" : [</p>
+<p style="text-align: justify;">             {</p>
+<p style="text-align: justify;">                    "_id": 1,</p>
+<p style="text-align: justify;">                    "comment_text": "Je suis le commentaire 1",</p>
+<p style="text-align: justify;">                    "author": "Mickael Barroux"</p>
+<p style="text-align: justify;">             },</p>
+<p style="text-align: justify;">             {</p>
+<p style="text-align: justify;">                    "_id": 2,</p>
+<p style="text-align: justify;">                    "comment_text": "Je suis le commentaire 2",</p>
+<p style="text-align: justify;">                    "author": "Arolla",</p>
+<p style="text-align: justify;">             }</p>
+<p style="text-align: justify;">       ]</p>
+<p style="text-align: justify;">}</p>
+<p style="text-align: justify;">Cela sera optimisé pour la récupération des données en lecture. Par contre, revers de la médaille, ce sera un peu plus compliqué dans des cas de mises à jour du nom d’un auteur par exemple (il faudra mettre à jour l’auteur de chaque commentaire écrit par la personne)…</p>
+<h1 style="text-align: justify;">Partie 4 : Performances</h1>
+<p style="text-align: justify;">Une autre façon d’optimiser les performances sur MongoDB, et là on rejoint une notion des bases de données relationnelles, est d’utiliser des indexes. Cela permet de conserver à un instant T la façon dont sont organisés les documents en base (sorte de table des matières avancée), afin de les retrouver plus rapidement par la suite. Cela rend les lectures plus rapides (si elles utilisent les indexes), mais les écritures plus coûteuses car il faut maintenir ces indexes à jour.</p>
+<p style="text-align: justify;">Mongo dispose de commandes de création (<i>ensureIndex</i>) et de suppression d’index (<i>removeIndex</i>). Ces indexes peuvent être multi-clés, c’est-à-dire que l’on peut organiser les documents selon un champ puis un autre (date et titre d’un article par exemple). Il faut faire preuve de réflexion pour définir des indexes pertinents sur les données, en fonction de leur utilisation dans les requêtes (si on veut les 10 derniers articles sur la page d’accueil du site, il peut être opportun de définir un index sur la date de publication dans l’ordre du plus récent au plus ancien par exemple).</p>
+<p style="text-align: justify;">La commande Mongo <i>explain()</i> permet de debugger l’utilisation des indexes sur une requête donnée. Elle donne des détails intéressants sur les indexes utilisés, le nombre de documents parcourus, le temps d’exécution…</p>
+<p style="text-align: justify;">Dans une optique d’optimisation de notre application, on peut logguer les requêtes lentes (définition d’un seuil limite) afin d’ajouter les indexes appropriés par la suite. Du profiling peut également être nécessaire à l’aide des commandes <i>mongotop()</i> et <i>mongostat()</i>.</p>
+<h1 style="text-align: justify;">Partie 5 : Aggregation pipeline</h1>
+<p style="text-align: justify;">Mongo apporte un framework d’agrégation complet pour les requêtes les plus complexes. En effet, il permet de chaîner différents opérateurs dans une même commande, afin de filtrer les résultats. Les différents opérateurs sont détaillés ci-dessous :</p>
+<p style="text-align: justify;">-          <b>$group</b> : opérateur de groupement des données (= <i>GROUP BY</i> en SQL).</p>
+<p style="text-align: justify;">De nouveaux opérateurs sont utilisables pour les données agrégées avec <i>$group</i>, à la manière de SQL : <i>$sum</i> (somme), <i>$avg</i> (moyenne), <i>$max</i>, <i>$min</i>, <i>$addToSet</i> / <i>$push</i> (ajout à une liste). =&gt; Attention à la taille de la requête et au nombre de docs générés ! (un index peut être utile dans ces cas-là)</p>
+<p style="text-align: justify;">-          <b>$unwind</b> : opérateur qui permet de dénormaliser les données d’un tableau.</p>
+<p style="text-align: justify;">En fait pour chaque document contenant un tableau de N valeurs, cet opérateur génère N documents avec chaque valeur contenue dans le tableau sur lequel est appliqué <i>$unwind</i>.</p>
+<p style="text-align: justify;">-          <b>$project</b> : permet de ne projeter que certaines propriétés que l’on souhaite afficher.</p>
+<p style="text-align: justify;">-          <b>$match</b> : permet de filtrer les données sur différents critères, comme avec la commande <i>find()</i></p>
+<p style="text-align: justify;">-          <b>$sort</b> : permet de trier les données par le champ spécifié (dans l’ordre ASC / 1 ou DESC / -1)</p>
+<p style="text-align: justify;">-          <b>$skip</b> : permet de « passer » les N premiers documents</p>
+<p style="text-align: justify;">-          <b>$limit</b> : permet de limiter le nombre de documents résultats</p>
+<p style="text-align: justify;"><span style="text-decoration: underline;">Exemple d’opérateurs combinés</span> : On cherche l'auteur du plus grand nombre de commentaires sur notre blog.</p>
+<p style="text-align: justify;">db.posts.aggregate([</p>
+<p style="text-align: justify;">       {</p>
+<p style="text-align: justify;">             "$unwind": "$comments" /* Cree un doc par commentaire */</p>
+<p style="text-align: justify;">       },</p>
+<p style="text-align: justify;">       {</p>
+<p style="text-align: justify;">             "$project" : {</p>
+<p style="text-align: justify;">                    comments: 1    /* Ne conserve comme donnees que les commentaires */</p>
+<p style="text-align: justify;">             }</p>
+<p style="text-align: justify;">       },</p>
+<p style="text-align: justify;">       {</p>
+<p style="text-align: justify;">             "$group": {</p>
+<p style="text-align: justify;">                    _id: "$comments.author",</p>
+<p style="text-align: justify;">                    nb_comments: {</p>
+<p style="text-align: justify;">                           $sum: 1 /*groupe par auteur, en comptant le nb de commentaires*/</p>
+<p style="text-align: justify;">                    }</p>
+<p style="text-align: justify;">             }</p>
+<p style="text-align: justify;">       },</p>
+<p style="text-align: justify;">       {</p>
+<p style="text-align: justify;">             "$sort": {</p>
+<p style="text-align: justify;">                    "nb_comments": -1 /* trie par nb de commentaires du + grand au + petit*/</p>
+<p style="text-align: justify;">             }</p>
+<p style="text-align: justify;">       },</p>
+<p style="text-align: justify;">       {</p>
+<p style="text-align: justify;">             "$limit": 1              /* ne garde que le premier resultat */</p>
+<p style="text-align: justify;">       }</p>
+<p style="text-align: justify;">])</p>
+<p style="text-align: justify;">Le système d’agrégation de Mongo est donc très puissant et permet de créer tout type de requête complexe.</p>
+<h1 style="text-align: justify;">Partie 6 : Application engineering</h1>
+<p style="text-align: justify;">Cette dernière partie d’apprentissage concerne toute la partie architecture d’une application utilisant MongoDB.</p>
+<p style="text-align: justify;">Les principaux concepts expliqués dans cette partie sont la réplication et le sharding.</p>
+<h2 style="text-align: justify;">Replication (vertical scaling)</h2>
+<p style="text-align: justify;">Cette technique permet la redondance des données sur différents nœuds Mongo et donc garantit la disponibilité des données en cas de crash. Mongo permet en effet de définir un nombre de nœuds qui sont des répliques du nœud maître à l’aide de commandes de configuration au démarrage de l’application.</p>
+<p style="text-align: justify;">Les écritures de documents sont toujours effectuées sur le nœud maître, et par défaut les lectures aussi. Les nœuds répliques servent uniquement à répliquer les données du maître, grâce à des mécanismes de synchronisation. Mais l’utilisateur peut choisir d’utiliser les nœuds répliqués pour lire les données et ainsi décharger le maître et accélérer les requêtes. Attention cependant, les données peuvent être inconsistantes car les nœuds sur lesquels on lit dans ce cas peuvent ne pas avoir récupéré les données écrites sur le maître…</p>
+<p style="text-align: justify;">Lors d’un crash du nœud maître, un algorithme d’élection d’un nouveau nœud maître parmi les nœuds restant up est alors lancé. Au retour éventuel du nœud crashé, il reste esclave et se synchronise pour récupérer le delta de données perdu lors de son interruption de service.</p>
+<p style="text-align: justify;">Lors de l’instanciation du client JAVA, il suffit de lui passer l’adresse d’un des nœuds du replica set et il découvre tout seul l’intégralité des nœuds qui le constituent, en toute transparence pour l’utilisateur.</p>
+<h2 style="text-align: justify;">Sharding (horizontal scaling)</h2>
+<p style="text-align: justify;">Le sharding est une technique de répartition des données sur plusieurs nœuds, afin de mieux supporter la charge. On découpe les données et on les répartit sur les différents nœuds Mongo. Chaque « shard » est donc une base de données indépendante et, ensemble, les « shards » forment une base de données logique complète, qui est ensuite utilisée de manière transparente par les différents clients.</p>
+<p style="text-align: justify;">Par exemple, une recherche peut porter sur un ou plusieurs shards, c’est MongoDB qui s’occupe de récupérer les données aux bons endroits et de les agréger pour nous retourner un résultat cohérent.</p>
+<p style="text-align: justify;">Le choix d’une « shard key » intelligente est également abordé, puisqu’elle sert de critère pour répartir les données sur chaque shard.</p>
+<p style="text-align: justify;">On peut bien sûr utiliser ces deux techniques afin de répartir les données physiques sur plusieurs « replica set » (qui garantissent pour leur part la disponibilité de ces données).</p>
+<h1 style="text-align: justify;">Partie 7 : Case studies</h1>
+<p style="text-align: justify;">La partie 7 présente des cas réels d’utilisation de la technologie MongoDB par des grandes entreprises telles que Foursquare et Codecademy.</p>
+<p style="text-align: justify;">Les architectes techniques expliquent ce choix, les avantages de MongoDB et ce que cette technologie apporte à leur produit.</p>
+<h2 style="text-align: justify;"><a href="https://www.youtube.com/watch?v=GBauy0o-Wzs#t=366">An Interview: How Foursquare uses MongoDB</a></h2>
+<p style="text-align: justify;">Principaux avantages de Mongo de leur point de vue :</p>
+<ul style="text-align: justify;">
+<li>les mécanismes de sharding et de replica set avec failover automatique (pour la partie montée en charge de l’application)</li>
+<li>l’indexation spatiale est très utile pour les mécanismes de géolocalisation, calcul de distance et de coordonnées pour permettre à Foursquare d’offrir un service de qualité</li>
+<li>beaucoup moins de collections Mongo que de tables relationnelles (Postgresql) permettent une gestion plus simple et plus propre du code de l’application</li>
+<li>Codecademy utilise MongoDB en raison de la souplesse et du petit nombre de collections nécessaires, contrairement aux nombreuses tables dénormalisées que leur offre le monde relationnel.</li>
+<li>De plus, il est assez simple de faire du scaling horizontal et vertical avec cette technologie.</li>
+</ul>
+<h2 style="text-align: justify;"><a href="https://www.youtube.com/watch?v=RkPmVQNesZA#t=346">Codecademy co-founder Ryan Bubinski explains how his company uses MongoDB</a></h2>
+<h1 style="text-align: justify;">Conclusion</h1>
+<p style="text-align: justify;">MongoDB est une technologie prometteuse qui présente donc de nombreux avantages pour certains types d’applications WEB.</p>
+<p style="text-align: justify;">Cette formation certifiante en ligne, offerte gracieusement par MongoDB Inc., est ainsi très complète et très bien structurée et permet d’appréhender cette technologie pas à pas, grâce aux nombreux exemples fournis.</p>
+<p style="text-align: justify;">La création d’un blog utilisant les drivers JAVA pour Mongo permet de bien comprendre le fonctionnement et les applications possibles de ce type de base de données NoSQL.</p>
+<p style="text-align: justify;">La possibilité de suivre cette formation en ligne, en gérant donc son emploi du temps comme on le souhaite pour regarder les vidéos et faire les exercices, et la volonté des formateurs d’améliorer continuellement le contenu et les moyens de communication (blog, forum, etc…) en font des atouts indéniables par rapport à d’autres formations sur ce type de technologies.</p>
+<p style="text-align: justify;"><span style="text-decoration: underline;">Quelques chiffres pour finir : </span></p>
+<p style="text-align: justify;">Nombre de participants : 8.863</p>
+<p style="text-align: justify;">Taux de réussite de cette session : 21%</p>
+<p style="text-align: justify;">Temps par semaine : entre 1h et 2h de vidéos et 3h de travail personnel</p>

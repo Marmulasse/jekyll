@@ -1,0 +1,50 @@
+---
+layout: post
+title: '[NCrafts.io] Refactor your architecture'
+date: 2014-06-18 10:15:12.000000000 +02:00
+type: post
+published: true
+status: publish
+categories:
+- Bonnes pratiques de dév
+- Evénements
+tags:
+- architecture
+- design
+- NCrafts
+meta:
+  _wpcom_is_markdown: '1'
+  _edit_last: '1'
+  sfw_pwd: 7M4n5KVWLjMx
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/p2n665f
+  _twitterrelated_short_urlHash: 50e8f09fe1b906f02abc1b29eea0833d
+author:
+  login: lyjia goldstein
+  email: lyjia.goldstein@arolla.fr
+  display_name: Ly-Jia Goldstein
+  first_name: Ly-Jia
+  last_name: Goldstein
+---
+<p style="text-align: center;"><img class="rg_i aligncenter" style="width: 331px; height: 103px; margin-top: 0px;" alt="" src="{{ site.baseurl }}/assets/Z" width="403" height="125" name="oze0lOQRTmy83M:" data-sz="f" /></p>
+<p style="text-align: justify;">NCrafts est une conférence (pas que) .NET indépendante et très sympathique qui a eu lieu le 16 mai dernier. L'ensemble des sessions était de qualité, et j'ai particulièrement apprécié celle de <a href="https://twitter.com/julienlavigne">Julien Lavigne du Cadet</a>, "<a href="http://www.slideshare.net/Julionn/refactor-your-software-architecture">Refactor your achitecture"</a>. Cette présentation était complémentaire à celle que j'ai animé au BreizhCamp une semaine plus tard "<a href="http://lyjia.net/breizhcamp-slides-de-ma-presentation/">Faire la conception en équipe sans architecte, non mais allô quoi ?"</a></p>
+<p style="text-align: justify;"><strong>One size doesn't fit all</strong><br />
+Les entreprises adoptent généralement une architecture 3 tiers : une couche pour la base de données, une autre pour le métier et la dernière pour la GUI. Julien qualifie ce type d'architecture de monolithique : soit tout le système est livré pour chaque changement, même infime, soit rien du tout. Ce qui peut poser problème pour les entreprises qui ont besoin de mettre en production souvent (c'est-à-dire quasiment toutes).</p>
+<p style="text-align: justify;">Le coût d'un changement de framework est également élevé dans ce type d'architecture puisque cela nécessite "juste" de réécrire une couche toute entière.</p>
+<p style="text-align: justify;">Ce choix d'architecture résulte la plupart du temps d'un vœu pieux de créer une solution unique/générique pour tous nos problèmes. C'est ainsi que l'on se retrouve par exemple avec un modèle de données commun à tous mais qui ne convient à personne.</p>
+<p style="text-align: justify;">Pour permettre des livraisons fréquentes, délaissons-nous de ce découpage horizontal (technique) de l'architecture pour privilégier un découpage vertical (métier). Le système est alors décomposé en petits composants indépendants : chacun d'entre eux pourra être livré sans impacter tout le reste du système.</p>
+<p style="text-align: justify;"><strong>Comment faire ?</strong></p>
+<p style="text-align: justify;">Le changement d'architecture ne peut évidemment pas se faire instantanément. Pour l'amorcer, il faut commencer par des fonctionnalités qui ont peu de dépendances, par exemple : l'envoi de mails.</p>
+<p style="text-align: justify;">Lors du développement de ces fonctionnalités revisitées, une attention particulière doit être portée sur les interfaces et les façons de communiquer entre composants, puisque nous nous inscrivons dans une architecture verticale ! Ces composants doivent aussi communiquer de manière fonctionnelle, en privilégiant les champs métier par rapport aux structures purement techniques, tels que les viewbags.</p>
+<p style="text-align: justify;">Le choix du framework n'a pas à être déterminé dès le début du projet. Le plus important est de découper fonctionnellement et non la technologie à utiliser. Il est donc conseillé de partir intuitivement, puis d'effectuer les changements de manière itérative. Dans l'exemple d'envoi des mails, les problèmes de performances et de disponibilité ne sont traités qu'au moment où ils arrivent, mais pas avant.</p>
+<p style="text-align: justify;">Quand votre fonctionnalité est prête, n'oubliez pas de repasser sur l'ensemble du code legacy pour remplacer l'ancienne fonctionnalité par un appel au nouveau composant.</p>
+<p style="text-align: justify;">Et voilà, il ne reste plus qu'à s'attaquer à la prochaine fonctionnalité !</p>
+<p style="text-align: justify;"><strong>Quelques autres conseils pour la route</strong></p>
+<ul style="text-align: justify;">
+<li>Écrire tout nouveau code dans un composant et non dans le plat de spaghettis existant.</li>
+<li>Le code legacy est également réputé pour se dissimuler dans des procédures stockées. Pas de panique, si vous avez de la chance, la procédure n'est pas trop énorme, alors réécrivez-le dans un composant "métier". Sinon, encapsulez-le dans un module pour définir des frontières claires et ainsi éviter d'alimenter encore plus ledit plat de spaghettis.</li>
+<li>Pour chacun des composants indépendants de votre système, évitez de reproduire des usines à gaz (sinon nous perdons l'intérêt de cet exercice). Le design doit rester simple et pour chaque composant.</li>
+<li>Une architecture verticale permet de faire des expérimentations, puisque les composants sont indépendants, profitez-en !</li>
+</ul>
+<p style="text-align: justify;">Avec cette recette, les changements au sein du système sont maîtrisés et les tests sont facilités. Ainsi, les délais de livraison peuvent être réduits et le système reste maintenable. Que demander de plus ?</p>
+<p style="text-align: justify;">Pour les sceptiques, Julien nous a expliqué que son équipe a réussi à refactorer l'architecture d'un système d'une banque en 5 ans. La refactorisation d'une architecture est faisable, même si elle prend du temps (comme toute refactorisation de code legacy en fait). À quand votre tour ?</p>

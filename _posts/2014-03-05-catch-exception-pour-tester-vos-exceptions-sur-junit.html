@@ -1,0 +1,105 @@
+---
+layout: post
+title: 'Catch-Exception : pour tester vos exceptions sur JUnit'
+date: 2014-03-05 12:00:48.000000000 +01:00
+type: post
+published: true
+status: publish
+categories:
+- Agilité
+- Bonnes pratiques de dév
+- Outils
+- Programmation
+tags:
+- java
+- junit
+- TDD
+meta:
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/pq5y4fg
+  _edit_last: '1'
+  _syntaxhighlighter_encoded: '1'
+  sfw_pwd: mwQJVOlY3jVw
+  _twitterrelated_short_urlHash: 31ed70cc0631c58bbd343f0380f84de5
+  _wpcom_is_markdown: '1'
+  _wp_old_slug: google-catch-exception-pour-tester-vos-exceptions-sur-junit
+author:
+  login: yakhya dabo
+  email: yakhya.dabo@arolla.fr
+  display_name: Yakhya Dabo
+  first_name: Yakhya
+  last_name: Dabo
+---
+<p style="text-align: justify;"><a href="http://www.arolla.fr/blog/wp-content/uploads/2014/03/Clean.jpg"><img class="size-medium wp-image-2235 alignleft" alt="Clean" src="{{ site.baseurl }}/assets/Clean-300x192.jpg" width="300" height="192" /></a>L'objectif principal des tests est de garantir la qualité du code de production en permettant des feed back rapides au moment du Refactoring. Il est malheureusement très courant de tomber sur du code de test sale, très sale, et des tests mal faits. L'une des situations où l'on peut rencontrer des problèmes de lisibilité c'est quand on a à tester des exceptions. Junit fournit pour cela différents pattern. Nous allons exposer leurs limites à travers un exemple simple et montrer comment on peut faire beaucoup plus simple avec la librairie <strong>Catch-exception</strong>.</p>
+<p><b>Exemple de code à tester</b></p>
+<p>[code language="java"]<br />
+public class Calculator {</p>
+<p>  public double squareRoot(int x)throws IllegalArgumentException{<br />
+    if (x&lt;0){<br />
+      throw new IllegalArgumentException(&quot;Could not calculate square root of a negative number&quot;);<br />
+    } else {<br />
+      return sqrt(x);<br />
+    }<br />
+  }</p>
+<p>  public double divide(int x, int y) throws IllegalArgumentException{<br />
+    if (y==0){<br />
+      throw new IllegalArgumentException(&quot;Could not divide by 0&quot;);<br />
+    } else {<br />
+      return x/y;<br />
+    }<br />
+  }<br />
+}<br />
+[/code]</p>
+<p style="text-align: justify;">Notre calculateur définit deux opérations qui déclarent toutes l'exception <em><strong>IllegalArgumentEception</strong></em>, avec des messages différents. L'idée est d'écrire un test qui détermine avec précision laquelle des exceptions est levée.</p>
+<h2>fail() avec try catch</h2>
+<p>[code language="java"]<br />
+  @Test<br />
+  public void exp0_should_throw_exception_when_calculating_square_root_of_negative_number(){<br />
+    try {<br />
+      calculator.squareRoot(-10);<br />
+      fail(&quot;Should throw exception when calculating square root of a negative number&quot;);<br />
+    }catch(IllegalArgumentException aExp){<br />
+      assert(aExp.getMessage().contains(&quot;negative number&quot;));<br />
+    }<br />
+  }<br />
+[/code]</p>
+<p style="text-align: justify;">Le test passe si l'exception spécifiée dans le try-catch est levée, sinon il échoue à l’exécution de la méthode fail() avec le message suivant “<i>Should throw exception when calculating square root of a negative number</i>”. On peut ensuite ajouter des assertions supplémentaires dans le bloc catch. C'est un pattern had-oc qui n'est pas dédié au test, il peut rendre le code de test moins lisible.</p>
+<h2>Expected Annotation</h2>
+<p>[code language="java"]<br />
+  @Test(expected=IllegalArgumentException.class)<br />
+  public void exp1_should_throw_exception_when_calculating_square_root_of_negative_number() {<br />
+    calculator.divide(100,0);<br />
+    calculator.squareRoot(-10);<br />
+  }<br />
+[/code]</p>
+<p style="text-align: justify;">Ici le code est beaucoup plus concis. Le test passe quand l'exception spécifiée dans la propriété expected de l'annotation @Test est levée. On rencontre une des limites de cette approche dans le cas où on a plusieurs instructions susceptibles de lever le même type d'exception. Dans l'exemple ci-dessus on ne sait pas forcément de quelle ligne vient l'exception . Il est aussi impossible de faire des assertions sur les états des objets utilisés dans le test. On ne peut pas non plus faire des tests sur les propriétés de l'exception, comme le message ou le code d'erreur, qui peuvent être utiles pour lever l’ambiguïté dans certaines situations. Ce pattern n'est donc à utiliser que pour des cas très simples.</p>
+<h2>JUnit @Rule et ExpectedException</h2>
+<p>[code language="java"]<br />
+  @Rule<br />
+  public ExpectedException thrown = ExpectedException.none();</p>
+<p>  @Test<br />
+  public void exp2_should_throw_exception_when_calculating_square_root_of_negative_number(){<br />
+    thrown.expect(IllegalArgumentException.class);<br />
+    thrown.expectMessage(JUnitMatchers.containsString(&quot;negative number&quot;));</p>
+<p>    calculator.squareRoot(-10);<br />
+  }<br />
+[/code]</p>
+<p style="text-align: justify;">On commence par déclarer thrown qui peut être utilisé dans toutes les méthodes de la classe de tests. Contrairement à Expected on peut faire une assertion sur le contenu du message, avec des matchers de Junit si on veut avoir plus de précisions. Le message suivant s'affichera si aucune exception n'est levée <i>"Expected test to throw (exception with message a string containing "negative number" and an instance of java.lang.IllegalArgumentException"</i>. Mais là non plus aucune assertion n'est possible sur les états des objets utilisés.</p>
+<h2>Catch-exception</h2>
+<p><a href="http://code.google.com/p/catch-exception/">http://code.google.com/p/catch-exception/</a></p>
+<p>[code language="java"]<br />
+  @Test<br />
+  public void exp3_should_throw_exception_when_calculating_square_root_of_negative_number(){<br />
+    catchException(calculator).squareRoot(-10);</p>
+<p>    assert caughtException() instanceof IllegalArgumentException;<br />
+  }<br />
+[/code]</p>
+<p>Dépendance Maven</p>
+<p>[code language="xml"]</p>
+<p>    com.googlecode.catch-exception<br />
+    catch-exception<br />
+    1.2.0<br />
+    test</p>
+<p>[/code]</p>
+<p style="text-align: justify;">La grande différence qu'elle apporte par rapport aux précédents exemples est qu'elle respecte le très commun pattern <a href="http://www.arrangeactassert.com/why-and-what-is-arrange-act-assert/">Arrange-Act-Assert</a>. Elle est externe à <strong>Junit</strong> et peut être utilisée avec d'autres frameworks de test comme <strong>Test NG.</strong> Le code est concis et facile à lire. On peut savoir à partir de quel appel l'exception a été générée, tester plusieurs exceptions à la fois et ajouter des assertions sur les états des objets et les propriétés des exceptions.</p>
+<p>N'hésitez pas à lire <span style="color: #003366;"><strong><a href="http://javadoc.catch-exception.googlecode.com/hg/index.html?com/googlecode/catchexception/CatchException.html"><span style="color: #003366;">la documention </span></a></strong></span>pour explorer toute sa richesse et sa simplicité, et son utilisation avec les matchers.</p>

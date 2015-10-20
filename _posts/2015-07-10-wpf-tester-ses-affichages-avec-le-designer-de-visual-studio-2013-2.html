@@ -1,0 +1,79 @@
+---
+layout: post
+title: 'WPF : Tester ses affichages avec le designer de Visual Studio (2013)'
+date: 2015-07-10 10:30:49.000000000 +02:00
+type: post
+published: true
+status: publish
+categories:
+- Outils
+- Programmation
+tags:
+- C#
+- editeur
+- outils
+- programming
+- visualization
+meta:
+  _wpcom_is_markdown: '1'
+  _edit_last: '1'
+  sfw_pwd: 8Y5TKLnMKbkS
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/ocbw4gu
+  _twitterrelated_short_urlHash: ec8a7b47e43b8c85beea575ce5e56128
+author:
+  login: vincent bourgeois
+  email: vincent.bourgeois@arolla.fr
+  display_name: Vincent Bourgeois
+  first_name: Vincent
+  last_name: Bourgeois
+---
+<p style="text-align: left;">Vous développez des interfaces graphiques complexes, mais pour tester l’affichage, il faut absolument démarrer l’application, et ça, ça peut prendre du temps pour accéder à l’interface voulue ? Pas de problème, Visual Studio permet d’afficher des valeurs par défaut dans le designer !<br />
+Je vais partir d’un exemple simple : un ViewModel composé d’une liste de Models composés eux même de 2 champs.</p>
+<p><img class="aligncenter" src="{{ site.baseurl }}/assets/e4d93f8c-a62d-4da7-bbc7-5a2f822d5f11.jpg" alt="" /></p>
+<p style="text-align: center;"><i>On remerciera le générateur de classes de Visual studio de clarifier la situation</i></p>
+<p style="text-align: left;">Je vais représenter ça dans ma fenêtre principale sous la forme d’une ListView.<br />
+Pour cela, j’ouvre mon application avec legacy important préférée :<br />
+<img class=" aligncenter" title="Spoiler : en fait c'est une démo" src="{{ site.baseurl }}/assets/a81548f8-a562-48e3-9002-dc5d3b848bb7.jpg" alt="" /></p>
+<p style="text-align: center;"><i>Spoiler : c'est une démo</i></p>
+<p><span style="text-decoration: underline;">Étape 1</span> : Faire le lien entre notre ViewModel et notre Vue. Pour cela, on définit dans le XAML le namespace du ViewModel, puis on l’inscrit en tant que DataContext.<br />
+<code>&lt;Window x:Class="demoWPF.MainWindow"<br />
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"<br />
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"<br />
+xmlns:Controller="clr-namespace:demoWPF"<br />
+Title="MainWindow" Height="350" Width="525"&gt;<br />
+&lt;Window.DataContext&gt;<br />
+&lt;Controller:DemoViewModel/&gt;<br />
+&lt;/Window.DataContext&gt;</code><br />
+Effet sympa, avec le lien créé en étape 1, on débloque l’auto-complétion qui se fait sur les propriétés du DataContext dans le XAML :<br />
+<img class=" aligncenter" src="{{ site.baseurl }}/assets/0f992c8d-ba50-4f72-bae1-02150238c1b9.jpg" alt="" /></p>
+<p style="text-align: center;"><i>Productivité : over 9000</i></p>
+<p style="text-align: left;">Effet sympas numéro 2 : ça marche aussi pour les UserControls :)</p>
+<p style="text-align: left;"><span style="text-decoration: underline;">Étape 2:</span> On remplit les informations par défaut du ViewModel. Autre astuce, si vous ne voulez pas que ces informations polluent votre code, ajoutez le test de détection si vous êtes dans le designer comme suit :<br />
+<code>public DemoViewModel()<br />
+{<br />
+if(DesignerProperties.GetIsInDesignMode(new DependencyObject()))<br />
+{<br />
+models = new List&lt;DemoModel&gt;() { new DemoModel(),new DemoModel()};<br />
+}<br />
+}</code></p>
+<p style="text-align: left;"><span style="text-decoration: underline;">Étape3 :</span> On remplit les informations de base du Model.<br />
+<code>public DemoModel()<br />
+{<br />
+StrField1 = "field1";<br />
+StrField2 = "field2";<br />
+}</code></p>
+<p style="text-align: left;"><span style="text-decoration: underline;">Étape 4 : </span>On affiche dans une ListView.<br />
+<code>&lt;ListView ItemsSource="{Binding models}" Grid.ColumnSpan="2"&gt;<br />
+&lt;ListView.View&gt;<br />
+&lt;GridView&gt;<br />
+&lt;GridViewColumn Header="Header1" DisplayMemberBinding="{Binding StrField1}"/&gt;<br />
+&lt;GridViewColumn Header="Header2" DisplayMemberBinding="{Binding StrField2}"/&gt;<br />
+&lt;/GridView&gt;<br />
+&lt;/ListView.View&gt;<br />
+&lt;/ListView&gt;</code></p>
+<p style="text-align: left;"><span style="text-decoration: underline;">Étape 5 :</span> On observe le résultat.<br />
+<img class=" aligncenter" title="Santé, sobriété" src="{{ site.baseurl }}/assets/02a131ec-d8b7-40b6-a2f7-b14155890289.jpg" alt="" /></p>
+<p style="text-align: center;"><i>Santé, sobriété</i></p>
+<p>Cet exemple était très basique, mais il permet de visualiser rapidement l’aspect de l’affichage.<br />
+<span style="text-decoration: underline;">Étape 6 : aller plus loin.</span> Il ne faut pas s’arrêter là, cette technique permet de tester l’affichage basique de composants complexes. Il est possible aussi de tester ainsi de façon presque unitaire les différents cas d’affichage. Et qui a dit qu’on ne pouvait pas utiliser de mock plutôt que ton vrai ViewModel, et ainsi éviter de mélanger le code de l’objet qui part en PROD avec le code d’affichage ?</p>

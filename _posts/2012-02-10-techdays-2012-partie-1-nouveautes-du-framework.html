@@ -1,0 +1,62 @@
+---
+layout: post
+title: TechDays 2012 - partie 1 - nouveautés du framework
+date: 2012-02-10 07:55:19.000000000 +01:00
+type: post
+published: true
+status: publish
+categories:
+- Actu
+- Evénements
+tags:
+- développement
+- TechDays
+meta:
+  _edit_last: '1'
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/ckz5s7s
+  _twitterrelated_short_urlHash: e4f20127c5478bb3d02758fb15f70859
+  sfw_pwd: 7ZHbSNh5MpWF
+author:
+  login: pierre irrmann
+  email: pierre.irrmann@arolla.fr
+  display_name: Pierre Irrmann
+  first_name: Pierre
+  last_name: Irrmann
+---
+<h3 style="text-align: justify;"><img src="{{ site.baseurl }}/assets/wcSStkigUgY1gAAAABJRU5ErkJggg==" alt="" width="141" height="76" /></h3>
+<h3 style="text-align: justify;">Compte-rendu général de mon parcours de cette année aux Tech Days</h3>
+<h4 style="text-align: justify;">Mardi 7 février (matin)</h4>
+<p style="text-align: justify;">Arrivée en grande forme, tout juste à l’heure, mon badge est déjà imprimé, direction la plénière, je ne voudrais pas rater Eric Mittelette !</p>
+<p style="text-align: justify;">Plein les yeux et les oreilles, la plénière d’ouverture c’est l’apéritif des TechDays… Comme tous les ans, cette keynote est l’occasion de “faire le show” ! Je la trouve toujours utile pour se mettre dans le bain, et se préparer pour les trois jours à venir. Au menu dans le désordre : cloud, asynchronisme, IHM, NuGet, MvcScaffolding, objects connectés, Metro, C++ 11 dans VS11 CTP, HTML5 / CSS3, CAAS (Compiler As A Service) / Roslyn…</p>
+<p style="text-align: justify;"><!--more--></p>
+<p style="text-align: justify;">Pour continuer sur ma lancée, direction l’amphi bleu pour une session générale sur les nouveautés du framework 4.5, en trois parties :</p>
+<ol style="text-align: justify;">
+<li>
+<h5>Asynchronisme, programmation parallèle, nouveaux mots-clés du langage async / await, amélioration des Task de la TPL</h5>
+<p>On commence par une description de l’évolution des modèles de programmation asynchrone au fur et à mesure des versions du framework, avec les étapes suivantes :</p>
+<ul>
+<li>Modèle de programmation asynchrones : BeginMethod / EndMethod</li>
+<li>Modèle de programmation par évènements : OnMethodCompleted</li>
+<li>Modèle de programmation basé sur des tâches asynchrones : objets Task de la TPL</li>
+</ul>
+<p>On continue avec une explication async / await (la nouvelle syntaxe permettant d’incorporer des exécutions asynchrones dans un code très similaire à la syntaxe synchrone classique. Point à noter que je n’avais pas identifié à ce jour, et qui rend cette fonctionnalité très intéressante : l’exécution du code après la fin du traitement asynchrone se fait automatiquement dans le contexte de l’appelant initial (par exemple le thread graphique). Cela permet de régler très simplement les problèmes d’accès concurrents !</li>
+<li>
+<h5>DataFlow et programmation parallèle</h5>
+<p>Ici, j’ai découvert une nouveau morceau des capacités de parallélisation du framework, avec les DataFlow. On joue à construire des traitements en utilisant des blocs qui permettent d’enchaîner des transformations et des actions, chaque bloc œuvrant comme un acteur indépendant. On constitue ainsi des réseaux de blocs qui parallélisent les traitements. Tout ceci se trouve dans l’assembly System.Threading.Tasks.Dataflow.dll, et correspond exactement à mon besoin du moment (préparer l’Aroll@fterwork: parallélisation et programmation asynchrone…) En plus, ça me donne très envie d’aller creuser un peu le fonctionnement de ces blocs avec Reflector !</li>
+<li>
+<h5>Les nouveautés du framework qui sont des modifications du “Core” du framework</h5>
+<p>J'ai noté en particulier :</p>
+<ul>
+<li>Une nouvelle API HTTP</li>
+<li>Des améliorations de Managed Extensibility Framework</li>
+<li>l’introduction de la notion de Portable Library, qui permet de partager des modèles entre les différentes formes du framework .NET (.NET classique, Silverlight, Windows Phone, XBox…)</li>
+<li>WCF contract first, c’est à dire la possibilité de générer une interface de service à partir d’un WSDL fourni</li>
+<li>la possibilité de générer un “single WSDL” sur les services pour tout regrouper en un seul fichier (quand par exemple on veut générer un proxy du service avec une techno qui ne gère pas les WSDL sur plusieurs fichiers)</li>
+<li>et plus encore !</li>
+</ul>
+</li>
+</ol>
+<p style="text-align: justify;">A la sortie de cette session, je croise @cyriux (Cyrille Martraire, directeur technique d'Arolla), s’en suit une déjeuner très intéressant, à défaut d’être savoureux. Tant pis pour les sessions de 13h00, il faut savoir faire des choix.</p>
+<p style="text-align: justify;">La suite dans le billet n°2 !</p>
+<p style="text-align: justify;"><a href="http://twitter.com/#%21/pirrmann">@pirrmann</a></p>

@@ -1,0 +1,83 @@
+---
+layout: post
+title: TechDays 2012 - partie 3 - F# 3.0 Type Providers with Don Syme
+date: 2012-02-14 08:54:59.000000000 +01:00
+type: post
+published: true
+status: publish
+categories:
+- Actu
+- Evénements
+tags:
+- développement
+- F#
+- fonctionnel
+- TechDays
+meta:
+  _edit_last: '1'
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/cpdfhem
+  _twitterrelated_short_urlHash: 37f92b13cd662f9273078868c2b8a17b
+  sfw_pwd: xzKhaH3MeA6u
+author:
+  login: pierre irrmann
+  email: pierre.irrmann@arolla.fr
+  display_name: Pierre Irrmann
+  first_name: Pierre
+  last_name: Irrmann
+---
+<p style="text-align: justify;"><img src="{{ site.baseurl }}/assets/wcSStkigUgY1gAAAABJRU5ErkJggg==" alt="" width="141" height="76" />Focus particulier sur la session : Information-Rich Programming with F# 3.0!</p>
+<p style="text-align: justify;">Pour cette session, assurée en anglais par Don Syme, créateur du langage F# et toujours en charge de ses évolutions, au centre de recherche Microsoft à Cambridge, accrochez vos ceintures, on fait un bond dans le futur !</p>
+<p style="text-align: justify;"><!--more--></p>
+<p style="text-align: justify;">Aux TechDays, j’ai régulièrement remarqué que les sessions assurées dans les toutes petites salles, pour un public extrêmement restreint, pouvaient se révéler être passionnantes. J’avais assisté il y a quelques années à une démonstration du Cloud Azure alors qu’il s’agissait encore d’un projet de recherche, et désormais il semblerait que les mots “Cloud” et “Azure” doivent être prononcés par les intervenants à chaque session sous peine de se faire expulser du salon.</p>
+<p style="text-align: justify;">Je pense que dans le cas présent on se situe sur le même genre de situation. Je suis persuadé que les avancées du F# vont avoir à nouveau des répercutions dans les prochaines années sur les langages plus “mainstream” de Microsoft, C# et VB.NET.</p>
+<p style="text-align: justify;">L’introduction de la session a le mérite d’être clair, F# est là pour répondre à des changements profonds de notre environnement ! Pour Don Syme, nous avons dans les années passées assisté à un changement de paradigme : nous sommes passé de l’ère de l’industrie à l’ère de l’information. Ce changement peut désormais se sentir jusque dans les langages informatiques, et les nouveaux formats de données ouverts. Comme exemple, Don Syme nous montre le site <a href="http://www.programmableweb.com">www.programmableweb.com</a>, qui recense les API ouvertes disponibles sur internet.</p>
+<p style="text-align: justify;">L’augmentation du volume d’informations disponibles s’est accompagné de l’utilisation de plus en plus fréquente des langages de programmation dynamique, qui permettent facilement de s’adapter et de représenter très facilement de nombreux formats de données.</p>
+<p style="text-align: justify;">Dans cette optique, F# 3.0 est désormais doté de Type Providers, qui permettent de voir les sources de données comme des bibliothèques. Pour mettre cette évolution dans son contexte, Don Syme nous propose un petit historique des évolutions du F#. Le tableau suivant montre le problématiques particulières pour lesquelles F# a été conçu.</p>
+<table width="438" border="1" cellspacing="0" cellpadding="2">
+<tbody>
+<tr>
+<td align="center" valign="top" width="133">Data<br />
+Information<br />
+Services</td>
+<td align="center" valign="top" width="162">Code<br />
+Analysis<br />
+Algorithms<br />
+Parallel programming</td>
+<td align="center" valign="top" width="141">Presentation<br />
+Publication<br />
+Experience</td>
+</tr>
+<tr>
+<td align="center" valign="top" width="133">F# 3.0</td>
+<td align="center" valign="top" width="162">F# 1.0, 2.0</td>
+<td align="center" valign="top" width="141">C#, F#, Pit, WebSharper, JavaScript…</td>
+</tr>
+</tbody>
+</table>
+<p style="text-align: justify;">S’en suivent quelques slides de témoignages d’utilisation des versions précédentes de F#, tout à fait de saison en ce froid hivernal : une application de load balancing d’énergie (par Simon Cousins) et un exemple dans le monde de la finance (par Phil Trelford).</p>
+<p style="text-align: justify;">Enfin, on attaque le sujet des Types Providers : dans une console interactive, Don Syme référence les données de la banque mondiale (http://data.worldbank.org/data-catalog). Les types de données nécessaires sont générés à la volée, et l'IntelliSense est disponible, au fur et à mesure de l’exploration des données. Tout ceci est possible grâce à l’analyse automatique à la fois des données et des méta-données exposées par les services.</p>
+<p style="text-align: justify;">Un mash-up est rapidement mis en place, pour récupérer les données concernant la dette gouvernementale de la Grèce (au hasard). Je ne vois pas à ce jour comment on pourrait récupérer ces données avec un code à la fois aussi simple et aussi expressif… En quelques lignes, on génère un graphique d’évolution du montant de la dette, puis un nouveau graphique avec cette fois l’évolution de la dette souveraine de plusieurs pays européens !</p>
+<p style="text-align: justify;">Autre exemple : pour vérifier les propos tenus par un politicien tchèque, on effectue (à nouveau en quelques lignes) des moyennes sur des données mondiales. Évidemment le politicien avait tort…</p>
+<p style="text-align: justify;">Pour référencer des données depuis un service exposant des données OData, il suffit de le référencer :</p>
+<p style="text-align: justify;"><em>type Netflix</em> = <em>ODataService</em>&lt;"http://odata.<em>netflix</em>.com"&gt;</p>
+<p style="text-align: justify;">Le type défini est alors vu comme s’il était le point d’entrée d’une bibliothèque de types, et permet de développer avec des objets fortement typés et le support de l’IntelliSense.</p>
+<p style="text-align: justify;">Suivent encore d’autres mash-ups, comme la corrélation de prévisions météorologiques avec les les données réelles collectées pour visualiser sur une carte les écarts entre prévisions et réalité.</p>
+<p style="text-align: justify;">La présentation se termine sur sur une récapitulatif des types providers existants à ce jour directement dans F# 3.0, mais aussi sur le modèle extensible et ouvert des Type Providers, et la possibilité de développer ses propres outils, ou de puiser dans ceux déjà réalisés par la communauté, notamment sur GitHub.</p>
+<p style="text-align: justify;">Pour résumer, les Types Providers permettent de récupérer très simplement des données de manière <strong>fortement typée</strong>, <strong>sans génération explicite de code</strong>, et avec un <strong>modèle extensible et ouvert</strong>, à partir de toutes sortes de sources :</p>
+<ul style="text-align: justify;">
+<li>des données ouvertes sur le web (OData),</li>
+<li>les data markets existants (Azure par exemple),</li>
+<li>WMI et Active Directory,</li>
+<li>des feuilles de calculs (Excel),</li>
+<li>des web services,</li>
+<li>des outils CRM,</li>
+<li>les réseaux sociaux,</li>
+<li>des données présentes en bases SQL,</li>
+<li>des données scientifiques…</li>
+</ul>
+<p style="text-align: justify;">Et en attendant que le webcast des TechDays soit disponible, la présentation faite par Don Syme sur le même sujet à Londres en novembre dernier est en ligne à l’adresse suivante :</p>
+<p style="text-align: justify;"><a title="http://skillsmatter.com/podcast/scala/fsharp3" href="http://skillsmatter.com/podcast/scala/fsharp3">http://skillsmatter.com/podcast/scala/fsharp3</a></p>
+<p style="text-align: justify;">Vous pouvez également retrouver une interview de Don Syme sur le sujet :</p>
+<p style="text-align: justify;"><a title="http://www.simple-talk.com/opinion/geek-of-the-week/geek-of-the-week-don-syme/" href="http://www.simple-talk.com/opinion/geek-of-the-week/geek-of-the-week-don-syme/">http://www.simple-talk.com/opinion/geek-of-the-week/geek-of-the-week-don-syme/</a></p>
+<p style="text-align: justify;"><a href="http://twitter.com/#%21/pirrmann">@pirrmann</a></p>

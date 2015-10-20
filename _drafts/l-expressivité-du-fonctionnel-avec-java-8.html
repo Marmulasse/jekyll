@@ -1,0 +1,447 @@
+---
+layout: post
+title: L'expressivité du fonctionnel avec Java 8
+date: 
+type: post
+published: false
+status: draft
+categories:
+- Bonnes pratiques de dév
+- Fonctionnel
+- Programmation
+tags:
+- Java 8
+- java8
+meta:
+  _wpcom_is_markdown: '1'
+  _edit_last: '1'
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/pgwurbs
+  _twitterrelated_short_urlHash: dbf4da5e77dbb95cefb64ac5d16c043b
+  sfw_pwd: WK53VA3rmdAS
+  _syntaxhighlighter_encoded: '1'
+author:
+  login: raphael squelbut
+  email: raphael.squelbut@arolla.fr
+  display_name: Raphaël Squelbut
+  first_name: Raphaël
+  last_name: Squelbut
+---
+<h2>Contexte</h2>
+<p>Dans ma dernière mission chez un fournisseur de voyage, l'application a été migrée en Java 8.</p>
+<p>Pour moi qui utilise Guava depuis quelques années (depuis <a href="http://minilien.fr/a08em1">cet article de Cyrille Martraire</a> en fait), c'est une excellente nouvelle.<br />
+J'avais constaté qu'en de multiples endroits, on parcourait des listes, puis en fonction de l'item, on remplissait une nouvelle liste, ou alors on filtrait, etc .... Bref, une sorte d'énorme bac à sable pour tester la programmation fonctionnelle et son expressivité. J'étais ravi.</p>
+<p>Et un jour ... en cherchant l'origine d'un bug ... je tombe sur ce bout de code :</p>
+<pre>[java]
+/**
+* Compute how many chunks to delete for
+* given Travel to insert in database.
+* The number of chunks is mapped with fares to exclude from billing
+*/
+private int compute(final Travel travel) {
+&lt;%%KEEPWHITESPACE%%&gt;    int chunksToRemove = 0;
+&lt;%%KEEPWHITESPACE%%&gt;    final Price[] prices = travel.getPrices();
+&lt;%%KEEPWHITESPACE%%&gt;    if (!ArrayUtils.isEmpty(prices)) {
+&lt;%%KEEPWHITESPACE%%&gt;        Arrays.asList(prices);
+&lt;%%KEEPWHITESPACE%%&gt;        for (final Price price : prices) {
+&lt;%%KEEPWHITESPACE%%&gt;            final FarePolicy[] farePolicies = price.getFarePolicies();
+&lt;%%KEEPWHITESPACE%%&gt;            final CustomerFare[] customerFares = price.getCustomerFares();
+&lt;%%KEEPWHITESPACE%%&gt;            for (final FarePolicy fareCalculation : farePolicies) {
+&lt;%%KEEPWHITESPACE%%&gt;                for (final String excludedFare : billing.getExcludedFares()) {
+&lt;%%KEEPWHITESPACE%%&gt;                    if (excludedFare.equals(fareCalculation.getFareName())) {
+&lt;%%KEEPWHITESPACE%%&gt;                        for (final CustomerFare customerFare : customerFares) {
+&lt;%%KEEPWHITESPACE%%&gt;                          if(customerFare.getType().equals(
+&lt;%%KEEPWHITESPACE%%&gt;                             fareCalculation.getPassengerType())) {
+&lt;%%KEEPWHITESPACE%%&gt;                                chunksToRemove +=
+&lt;%%KEEPWHITESPACE%%&gt;                                        (fareCalculation.getChunks().length *
+&lt;%%KEEPWHITESPACE%%&gt;                                         customerFare.getCustomersQuantity());
+&lt;%%KEEPWHITESPACE%%&gt;                            }
+&lt;%%KEEPWHITESPACE%%&gt;                        }
+&lt;%%KEEPWHITESPACE%%&gt;                    }
+&lt;%%KEEPWHITESPACE%%&gt;                }
+&lt;%%KEEPWHITESPACE%%&gt;            }
+&lt;%%KEEPWHITESPACE%%&gt;        }
+&lt;%%KEEPWHITESPACE%%&gt;    }
+&lt;%%KEEPWHITESPACE%%&gt;    return chunksToRemove;
+}
+[/java]</pre>
+<p>Bon là, je crois que c'est urgent, il faut refactorer !!!<br />
+Avant de modifier le code, commençons par une rapide analyse du code.</p>
+<h3>Premiers constats</h3>
+<ul>
+<li>Aïe, on est dans une méthode privée.</li>
+<li><code>Arrays.asList(prices);</code> ne sert à rien</li>
+<li>Si <code>billing.getExcludedFares()</code> est null, alors on aura une NullPointerException dans notre boucle <code>for</code>. C'est d'ailleurs le bug qui m'a amené ici. (Ce n'est pas le cas pour <code>farePolicies</code> et <code>customerFares</code> car l'API qui nous fournit ces objets nous assure que ces tableaux ne seront jamais nuls.)</li>
+<li>Le commentaire et le nom de la méthode ne sont pas d'une grande aide pour comprendre ce que fait cette méthode.</li>
+</ul>
+<p>Cette méthode est appelée lors de l'application d'un tarif sur un voyage. Elle calcule un nombre utilisé lors de l'application du tarif. Son importance et sa complexité justifient selon moi la création d'un objet dédié.</p>
+<p>Pour pouvoir commencer à refactorer, je dois pouvoir être capable de tester simplement le code existant, afin d'être sûr de ne pas introduire de régression. Or l'intention de cette méthode privée est "testée" via sa méthode appelante. Cool j'ai un jeu de test :+1:. Je vais donc l'extraire et l'utiliser pour tester mon nouvel objet.</p>
+<h3>Premières corrections</h3>
+<ul>
+<li>Créer une classe propre pour cette méthode et isoler le test.</li>
+<li>Supprimer le code inutile.</li>
+<li>Vérifier au début de la méthode si toutes mes données sont cohérentes avant de continuer le calcul.</li>
+<li>Supprimer le commentaire et trouver un nom adéquat quand j'aurais compris son utilité/fonctionnement.</li>
+<li>Extraire une méthode qui va effectuer le calcul pour un <code>Price</code>.</li>
+</ul>
+<p>Et ça donne ça :</p>
+<pre>[java]
+public int compute(final Travel travel) {
+&lt;%%KEEPWHITESPACE%%&gt;    if (!acceptsPreconditions(travel)) {
+&lt;%%KEEPWHITESPACE%%&gt;        return DEFAULT;
+&lt;%%KEEPWHITESPACE%%&gt;    }
+
+&lt;%%KEEPWHITESPACE%%&gt;    final Price[] prices = travel.getPrices();
+&lt;%%KEEPWHITESPACE%%&gt;    int chunkToExclude = DEFAULT;
+&lt;%%KEEPWHITESPACE%%&gt;    for (final Price price : prices) {
+&lt;%%KEEPWHITESPACE%%&gt;        chunkToExclude += countExclusionsForPrice( price);
+&lt;%%KEEPWHITESPACE%%&gt;    }
+&lt;%%KEEPWHITESPACE%%&gt;    return chunkToExclude;
+}
+
+public int countExclusionsForPrice(final Price price) {
+&lt;%%KEEPWHITESPACE%%&gt;    int retour = DEFAULT;
+&lt;%%KEEPWHITESPACE%%&gt;    final FarePolicy[] farePolicies = price.getFarePolicies();
+&lt;%%KEEPWHITESPACE%%&gt;    final CustomerFare[] customerFares = price.getCustomerFares();
+&lt;%%KEEPWHITESPACE%%&gt;    for (final FarePolicy farePolicy : farePolicies) {
+&lt;%%KEEPWHITESPACE%%&gt;        for (final FareLabel excludedFare : billing.getExcludedFares()) {
+&lt;%%KEEPWHITESPACE%%&gt;            if (excludedFare.equals(farePolicy.getFareName())) {
+&lt;%%KEEPWHITESPACE%%&gt;                for (final CustomerFare customerFare : customerFares) {
+&lt;%%KEEPWHITESPACE%%&gt;                    if (customerFare.getType().equals(farePolicy.getCustomerType())) {
+&lt;%%KEEPWHITESPACE%%&gt;                        retour += farePolicy.getChunks().length *
+&lt;%%KEEPWHITESPACE%%&gt;                                  customerFare.getCustomersQuantity();
+&lt;%%KEEPWHITESPACE%%&gt;                    }
+&lt;%%KEEPWHITESPACE%%&gt;                }
+&lt;%%KEEPWHITESPACE%%&gt;            }
+&lt;%%KEEPWHITESPACE%%&gt;        }
+&lt;%%KEEPWHITESPACE%%&gt;    }
+&lt;%%KEEPWHITESPACE%%&gt;    return retour;
+}
+[/java]</pre>
+<p>Avec une constante <code>DEFAULT = 0</code> et une méthode <code>acceptPreconditions(...)</code> qui vérifie que le Travel passé en paramètre est bon mais aussi que <code>billing</code> est dans un état cohérent avec le calcul. Cette méthode pourra être enrichie avec toutes les futures éventuelles vérifications préalables.</p>
+<p>Voilà, c'est un peu mieux mais sans programmation fonctionnelle, on peut difficilement aller plus loin. On ne peut pas séparer les deux boucles imbriquées. C'est dommage pour la lisibilité du code.</p>
+<p>On peut maintenant rentrer dans la phase 2 et essayer de comprendre en profondeur ce code.</p>
+<h3>Deuxième phase</h3>
+<ul>
+<li>On a un <code>Travel</code> qui contient des <code>Prices</code></li>
+<li>Chaque <code>Price</code> contient</li>
+<li>des <code>FarePolicy</code></li>
+<li>des <code>CustomerFare</code></li>
+<li>Chaque <code>FarePolicy</code> contient</li>
+<li>un <code>FareLabel</code></li>
+<li>un <code>CustomerType</code></li>
+<li>les <code>Chunk</code>s (sorte de bout de trajet) du <code>Travel</code> associés</li>
+<li>Chaque <code>CustomerFare</code> contient</li>
+<li>un <code>CustomerType</code></li>
+<li>le nombre de passagers du <code>Travel</code> associés</li>
+<li>On a un <code>billing</code> qui retourne les <code>FareLabel</code> exclus.</li>
+</ul>
+<p>Lorsqu'on calcule le tarif global du <code>Travel</code>, on applique un tarif à chaque morceau de trajet (<code>Chunk</code>).<br />
+Le nombre de <code>Chunk</code> sur lesquels on applique un tarif est multiplié par le nombre de passagers concernés par cette politique tarifaire.</p>
+<p>Pour avoir le tarif total, il ne faut pas comptabiliser les <code>Chunk</code> correspondant aux tarifs exclus. C'est donc le but de notre méthode : <strong><em>compter le nombre de <code>Chunk</code> à ne pas comptabiliser lors de la tarification.</em></strong></p>
+<p>Voici le code de test extrait de la méthode originale. Pour aider à comprendre, il faut passer un peu de temps sur la méthode <code>prepareTavel()</code> qui crée un <code>Travel</code> avec ses morceaux, ses tarifs, ses passagers :</p>
+<pre>[java]
+@InjectMocks
+private ChunksFromTravelBillingExcluder sut; // System Under Test
+@Mock
+private Billing billing;
+
+/**
+&lt;%%KEEPWHITESPACE%%&gt; * nom de méthode de test pourri
+&lt;%%KEEPWHITESPACE%%&gt; * mais je ne comprends pas encore exactement comment ca fonctionne
+&lt;%%KEEPWHITESPACE%%&gt; */
+@Test
+public void should_compute() {
+&lt;%%KEEPWHITESPACE%%&gt;    // GIVEN
+&lt;%%KEEPWHITESPACE%%&gt;    final Travel travel = prepareTravel();
+
+&lt;%%KEEPWHITESPACE%%&gt;    // WHEN
+&lt;%%KEEPWHITESPACE%%&gt;    when(billing.getExcludedFares()).thenReturn(
+&lt;%%KEEPWHITESPACE%%&gt;            new FareLabel[]{FareLabel.of(&quot;EXCLUDED_FARE&quot;), FareLabel.of(&quot;EXCLUDED_FARE_2&quot;)
+&lt;%%KEEPWHITESPACE%%&gt;            });
+
+&lt;%%KEEPWHITESPACE%%&gt;    final int actualQuantity = sut.count(travel);
+
+&lt;%%KEEPWHITESPACE%%&gt;    // THEN
+&lt;%%KEEPWHITESPACE%%&gt;    assertEquals(18, actualQuantity);
+}
+
+private Travel prepareTravel() {
+
+&lt;%%KEEPWHITESPACE%%&gt;    final FarePolicy farePolicy1 = new FarePolicy();
+&lt;%%KEEPWHITESPACE%%&gt;    farePolicy1.setCustomerType(CustomerType.of(&quot;CUSTOMER_TYPE_1&quot;));
+&lt;%%KEEPWHITESPACE%%&gt;    farePolicy1.setChunks(new Chunk[]{new Chunk(), new Chunk()});
+&lt;%%KEEPWHITESPACE%%&gt;    final FareLabel fare1 = FareLabel.of(&quot;FARE_1&quot;);
+&lt;%%KEEPWHITESPACE%%&gt;    farePolicy1.setFareLabel(fare1);
+
+&lt;%%KEEPWHITESPACE%%&gt;    final FarePolicy farePolicy2 = new FarePolicy();
+&lt;%%KEEPWHITESPACE%%&gt;    farePolicy2.setCustomerType(CustomerType.of(&quot;CUSTOMER_TYPE_2&quot;));
+&lt;%%KEEPWHITESPACE%%&gt;    farePolicy2.setChunks(new Chunk[]{new Chunk(), new Chunk(), new Chunk()});
+&lt;%%KEEPWHITESPACE%%&gt;    farePolicy2.setFareLabel(FareLabel.of(&quot;EXCLUDED_FARE&quot;));
+
+&lt;%%KEEPWHITESPACE%%&gt;    final CustomerFare customerFare1 = new CustomerFare();
+&lt;%%KEEPWHITESPACE%%&gt;    customerFare1.setCustomerType(CustomerType.of(&quot;CUSTOMER_TYPE_1&quot;));
+&lt;%%KEEPWHITESPACE%%&gt;    customerFare1.setCustomersQuantity(2);
+
+&lt;%%KEEPWHITESPACE%%&gt;    final CustomerFare customerFare2 = new CustomerFare();
+&lt;%%KEEPWHITESPACE%%&gt;    customerFare2.setCustomerType(CustomerType.of(&quot;CUSTOMER_TYPE_2&quot;));
+&lt;%%KEEPWHITESPACE%%&gt;    customerFare2.setCustomersQuantity(3);
+
+&lt;%%KEEPWHITESPACE%%&gt;    final Price price = new Price();
+&lt;%%KEEPWHITESPACE%%&gt;    price.setFarePolicies(new FarePolicy[]{farePolicy1, farePolicy2});
+&lt;%%KEEPWHITESPACE%%&gt;    price.setCustomerFares(new CustomerFare[]{customerFare1, customerFare2});
+
+&lt;%%KEEPWHITESPACE%%&gt;    final Travel travel = new Travel();
+&lt;%%KEEPWHITESPACE%%&gt;    travel.setChunks(new Chunk[]{new Chunk(), new Chunk(), new Chunk(), new Chunk()});
+
+&lt;%%KEEPWHITESPACE%%&gt;    final CustomersGroup customersGroup1 = new CustomersGroup();
+&lt;%%KEEPWHITESPACE%%&gt;    customersGroup1.setCustomers(new Customer[]{new Customer(), new Customer(), new Customer(),
+&lt;%%KEEPWHITESPACE%%&gt;            new Customer(), new Customer()});
+&lt;%%KEEPWHITESPACE%%&gt;    travel.setCustomersGroups(new CustomersGroup[]{customersGroup1});
+&lt;%%KEEPWHITESPACE%%&gt;    travel.setPrices(new Price[]{price, price});
+&lt;%%KEEPWHITESPACE%%&gt;    return travel;
+}
+[/java]</pre>
+<p>Je sais d'après la méthode de test que si l'on passe ce <code>Travel</code> dans notre méthode <code>compute(...)</code>, on doit obtenir <code>18</code>.<br />
+En effet pour le tarif à exclure <code>EXCLUDED_FARE</code>, c'est la <code>farePolicy2</code> qui comporte 3 <code>Chunk</code> et le <code>CUSTOMER_TYPE_2</code> qui est concernée. Et la <code>customerFare2</code> concerne 3 passagers de type <code>CUSTOMER_TYPE_2</code>.<br />
+Les deux <code>Price</code> étant identiques, on a</p>
+<blockquote><p>
+  3 <code>Chunk</code> * 3 passagers + 3 <code>Chunk</code> * 3 passagers = <strong>18</strong>
+</p></blockquote>
+<p>C'est en fait ce code de test qui m'a permis de comprendre l'implémentation (une preuve supplémentaire de pourquoi il faut tester et proprement de surcroît ;) ).<br />
+Même si le test est un peu complexe à comprendre il couvre une large palette de cas.<br />
+On pourrait découper les cas de tests mais ce n'est pas l'objet de cet article.</p>
+<h3>Récapitulons</h3>
+<ul>
+<li>pour chaque <code>Price</code></li>
+<li>on liste les <code>CustomerType</code> concernés par les exclusions de tarif</li>
+<li>pour chaque <code>CustomerType</code> à exclure</li>
+<li>on cherche le <code>FarePolicy</code> correspondant à exclure</li>
+<li>on cherche le <code>CustomerFare</code> correspondant à exclure</li>
+<li>on combine le <code>FarePolicy</code> et le <code>CustomerFare</code> obtenus pour obtenir le nombre de <code>Chunk</code> à exclure</li>
+<li>on additionne les nombres obtenus</li>
+<li>on additionne le nombre obtenu pour chaque <code>Price</code></li>
+</ul>
+<h2>Enfin un peu de Java 8</h2>
+<p>Convertissons tout ça en Java 8.<br />
+Premièrement, ce qui saute aux yeux : on doit avoir une fonction qui prend un <code>Price</code> qui retourne un <code>int</code>. Ce qui correspond à notre méthode <code>countExclusionsForPrice</code> précédente qu'on pourra référencer directement dans nos <code>Stream</code> via l'opérateur <code>::</code> : <code>this::countExclusionsForPrice</code><br />
+On verra son implémentation par la suite.</p>
+<p>On aura une fonction qui combine le <code>FarePolicy</code> et le <code>CustomerFare</code> et qui retourne un <code>int</code>, une <code>ToIntBiFunction&amp;lt;FarePolicy, CustomerFare&amp;gt;</code>. On appliquera cette lambda à chaque couple <code>FarePolicy</code>, <code>CustomerFare</code> correspondant à une exclusion. Je ne sais pas encore <a href="http://docs.oracle.com/javase/8/docs/api/java/util/function/class-use/ToIntBiFunction.html">quand et comment</a> on pourra l'appliquer.</p>
+<pre>[java]
+public int countExclusionsForFare(final FarePolicy policy, final CustomerFare faure) {
+&lt;%%KEEPWHITESPACE%%&gt;    return farePolicy.getChunks().length * customerFare.getCustomersQuantity();
+}
+[/java]</pre>
+<p>Pour lister les <code>CustomerType</code> concernés par les exclusions de tarif pour un <code>Price</code>, là c'est facile : on liste l'ensemble des <code>FarePolicy</code> d'un <code>Price</code>, on ne garde que celles contenues dont le <code>TarifLabel</code> est contenu dans les tarifs exclus. Puis on récupère le <code>CustomerType</code> de chaque <code>FarePolicy</code>.</p>
+<pre>[java]
+private Stream&amp;lt;CustomerType&amp;gt; findExcludedCustomerTypes(final Price price) {
+&lt;%%KEEPWHITESPACE%%&gt;    return Stream.of(price.getFarePolicies())
+&lt;%%KEEPWHITESPACE%%&gt;            .filter(fp -&amp;gt; excludedFares().contains(fp.getFareName()))
+&lt;%%KEEPWHITESPACE%%&gt;            .map(FarePolicy::getCustomerType);
+}
+...
+private List&amp;lt;FareLabel&amp;gt; excludedFares() {
+&lt;%%KEEPWHITESPACE%%&gt;    // retourne la liste des tarifs exclus
+}
+[/java]</pre>
+<p>Essayons maintenant d'implémenter notre <code>countExclusionsForPrice(Price)</code> qui compte le nombre de <code>Chunk</code> à exclure pour un <code>Price</code>. Maintenant que j'ai récupéré les tarifs à exclure pour chaque <code>Price</code>, cherchons les combinaisons de <code>FarePolicy</code> et <code>CustomerFare</code> à partir de ces infos.<br />
+Cela signifie qu'à partir d'un <code>Price</code> et d'un <code>CustomerType</code> à exclure je dois :<br />
+1.retrouver le <code>FarePolicy</code> correspondant<br />
+2.retrouver le <code>CustomerFare</code> correspondant<br />
+3.enfin calculer le nombre de <code>Chunk</code> à exclure.</p>
+<p>NB : En théorie, je devrais toujours avoir une correspondance 1-1 entre mes <code>FarePolicy</code> et mes <code>CustomerFare</code> et mes exclusions. N'en étant pas absolument certain, je vais utiliser des <code>Optional&amp;lt;&amp;gt;</code> pour accepter la correspondance 1-0. Il est par contre certain que je n'aurais pas de correspondance 1-n, je ne vais donc pas traiter le cas des listes.</p>
+<p>Cela donne</p>
+<pre>[java]
+public Optional&amp;lt;FarePolicy&amp;gt; findExcludedFarePolicy(final Price price,
+&lt;%%KEEPWHITESPACE%%&gt;                                                   final CustomerType excluded) {
+&lt;%%KEEPWHITESPACE%%&gt;    return findExcludedItem(price,
+&lt;%%KEEPWHITESPACE%%&gt;                            Price::getFarePolicies,
+&lt;%%KEEPWHITESPACE%%&gt;                            c -&amp;gt; c.getCustomerType().equals(excluded));
+}
+
+public Optional&amp;lt;CustomerFare&amp;gt; findExcludedCustomerFare(final Price price,
+&lt;%%KEEPWHITESPACE%%&gt;                                                       final CustomerType excluded) {
+&lt;%%KEEPWHITESPACE%%&gt;    return findExcludedItem(price,
+&lt;%%KEEPWHITESPACE%%&gt;                            Price::getCustomerFares,
+&lt;%%KEEPWHITESPACE%%&gt;                            c -&amp;gt; c.getType().equals(excluded));
+}
+
+private &amp;lt;I&amp;gt; Optional&amp;lt;I&amp;gt; findExcludedItem(final Price price,
+&lt;%%KEEPWHITESPACE%%&gt;                                         final Function&amp;lt;Price, I[]&amp;gt; itemsExtractor,
+&lt;%%KEEPWHITESPACE%%&gt;                                         final Predicate&amp;lt;I&amp;gt; itemsFinder) {
+&lt;%%KEEPWHITESPACE%%&gt;    return Stream.of(itemsExtractor.apply(price))
+&lt;%%KEEPWHITESPACE%%&gt;            .filter(itemsFinder)
+&lt;%%KEEPWHITESPACE%%&gt;            .findFirst();
+}
+[/java]</pre>
+<p>En ce qui concerne la <code>countExclusionsForFare(FarePolicy,CustomerFare)</code> et avec les <code>Optional&amp;lt;&amp;gt;</code> on aura ça</p>
+<pre>[java]
+private int countExclusionsForFare(final Optional&amp;lt;FarePolicy&amp;gt; farePolicy,
+&lt;%%KEEPWHITESPACE%%&gt;                                   final Optional&amp;lt;CustomerFare&amp;gt; customerFare) {
+&lt;%%KEEPWHITESPACE%%&gt;    return farePolicy.isPresent() &amp;amp;&amp;amp; customerFare.isPresent() ?
+&lt;%%KEEPWHITESPACE%%&gt;            farePolicy.get().getChunks().length *
+&lt;%%KEEPWHITESPACE%%&gt;            customerFare.get().getCustomersQuantity() :
+&lt;%%KEEPWHITESPACE%%&gt;            DEFAULT;
+}
+[/java]</pre>
+<p>En combinant tout ça, je peux calculer un nombre d'exclusions pour un <code>Price</code> et un <code>CustomerType</code> exclu</p>
+<pre>[java]
+private int countExclusionsForPriceByCustomerType(final Price price,
+&lt;%%KEEPWHITESPACE%%&gt;                                                  final CustomerType customerType) {
+&lt;%%KEEPWHITESPACE%%&gt;    final Optional&amp;lt;FarePolicy&amp;gt; farePolicy = findExcludedFarePolicy(price, customerType);
+&lt;%%KEEPWHITESPACE%%&gt;    final Optional&amp;lt;CustomerFare&amp;gt; customerFare = findExcludedCustomerFare(price,
+&lt;%%KEEPWHITESPACE%%&gt;                                                                         customerType);
+&lt;%%KEEPWHITESPACE%%&gt;    return this.countExclusionsForFare(farePolicy, customerFare);
+}
+[/java]</pre>
+<p>En utilisant l'application partielle ou <a href="https://fr.wikipedia.org/wiki/Curryfication">curryfication</a> du <code>Price</code>, j'obtiens très simplement l'implémentation de ma fonction<code>countExclusionsForPrice(Price)</code> que je pourrais appliquer très simplement à un <code>Stream</code> des <code>Price</code> d'un <code>Travel</code></p>
+<pre>[java]
+private int countExclusionsForPrice(final Price price) {
+&lt;%%KEEPWHITESPACE%%&gt;    final Stream&amp;lt;CustomerType&amp;gt; excludedCustomerTypes = findExcludedCustomerTypes(price);
+&lt;%%KEEPWHITESPACE%%&gt;    return excludedCustomerTypes
+&lt;%%KEEPWHITESPACE%%&gt;            .mapToInt(customerType -&amp;gt;
+&lt;%%KEEPWHITESPACE%%&gt;                          this.countExclusionsForPriceByCustomerType(price, customerType))
+&lt;%%KEEPWHITESPACE%%&gt;            .sum();
+}
+[/java]</pre>
+<p>Ce que l'on peut aussi écrire comme ça</p>
+<pre>[java]
+private int countExclusionsForPrice(final Price price) {
+&lt;%%KEEPWHITESPACE%%&gt;    return Optional.of(price)
+&lt;%%KEEPWHITESPACE%%&gt;            .map(this::findExcludedCustomerTypes)
+&lt;%%KEEPWHITESPACE%%&gt;            .orElse(Stream.empty())
+&lt;%%KEEPWHITESPACE%%&gt;            .mapToInt(customerType -&amp;gt;
+&lt;%%KEEPWHITESPACE%%&gt;                          this.countExclusionsForPriceByCustomerType(price, customerType))
+&lt;%%KEEPWHITESPACE%%&gt;            .sum();
+}
+[/java]</pre>
+<p>Ainsi pour obtenir le résultat, j'utilise le code suivant</p>
+<pre>[java]
+public int count(final Travel travel) {
+&lt;%%KEEPWHITESPACE%%&gt;    if (!acceptPreconditions(travel)) {
+&lt;%%KEEPWHITESPACE%%&gt;        return DEFAULT;
+&lt;%%KEEPWHITESPACE%%&gt;    }
+&lt;%%KEEPWHITESPACE%%&gt;    return countChunksExclusions(travel.getPrices());
+}
+
+private int countChunksExclusions(Price... prices) {
+&lt;%%KEEPWHITESPACE%%&gt;    return Stream.of(prices)
+&lt;%%KEEPWHITESPACE%%&gt;            .mapToInt(this::countExclusionsForPrice)
+&lt;%%KEEPWHITESPACE%%&gt;            .sum();
+}
+[/java]</pre>
+<p>Ou encore si on est joueur et en décomposant notre <code>acceptPreconditions(...)</code> en plusieurs filtres</p>
+<pre>[java]
+public int count(final Travel travel) {
+&lt;%%KEEPWHITESPACE%%&gt;    return Optional.of(travel)
+&lt;%%KEEPWHITESPACE%%&gt;            .filter(t -&amp;gt; billing != null &amp;amp;&amp;amp;   // ok ça n'a rien à voir avec le travel
+&lt;%%KEEPWHITESPACE%%&gt;                         !ArrayUtils.isEmpty(billing.getExcludedFares()))
+&lt;%%KEEPWHITESPACE%%&gt;            .filter(t -&amp;gt; !ArrayUtils.isEmpty(t.getPrices()))
+&lt;%%KEEPWHITESPACE%%&gt;            .map(Travel::getPrices)            // on obtient un tableau de Price
+&lt;%%KEEPWHITESPACE%%&gt;            .map(Stream::of)                   // on obtient un Stream de Price
+&lt;%%KEEPWHITESPACE%%&gt;            .orElse(Stream.empty())            // ou un Stream vide
+&lt;%%KEEPWHITESPACE%%&gt;            .mapToInt(this::countExclusionsForPrice)       // on applique notre fonction
+&lt;%%KEEPWHITESPACE%%&gt;            .sum();
+&lt;%%KEEPWHITESPACE%%&gt;    }
+[/java]</pre>
+<h1>Conclusion</h1>
+<p>A première vue, le résultat n'est pas incroyable. En effet, il y a beaucoup de petites méthodes privées.</p>
+<h3>Les aspects négatifs</h3>
+<ul>
+<li>à première vue, c'est confus, il y a beaucoup de méthodes et peu de lignes</li>
+<li>le code semble un peu explosé</li>
+<li>il y a plus de lignes de codes</li>
+</ul>
+<h3>Le positif</h3>
+<ul>
+<li>au delà de l'aspect visuel (un simple méthode de 10 lignes, c'est plus beau que 10 méthodes de 1 ligne), la rentrée dans le code est plus simple</li>
+<li>les concepts sont mieux définis et peuvent se composer, s'enchaîner (ce qui coûte en nombre de lignes de code)</li>
+<li>le code est totalement composable, il est donc plus évolutif et de plus sans effet de bords</li>
+</ul>
+<h3>Ce que j'en retire</h3>
+<p>Malgré de nombreuses explications et lectures sur le sujet, grâce à cet exercice j'ai enfin compris/acquis en profondeur les concepts d'application partielle ou curryfication (c'est-à-dire que je me souviendrais de ce que ça veut dire ;)) .<br />
+Autre chose, une fois les concepts à peu près maîtrisés, il est difficile de savoir quand s'arrêter d'écrire en fonctionnel. En effet, les notations Java 8 étant récentes, lire le code produit est parfois déroutant. Il faut donc savoir écrire du code à la hauteur de la maîtrise de l'équipe pour ne pas retrouver notre code à nouveau réécrit.<br />
+Par exemple, il n'est pas évident pour un néophyte de comprendre et penser qu'une méthode avec la signature suivante<br />
+<code>int conversionEnInt(MonObjet)</code> peut s'utiliser comme une <code>ToIntFunction</code> lors de la manipulation d'un <code>Stream</code>. J'en profite pour remercier <a href="https://twitter.com/aloyer">Arnauld Loyer</a> qui m'a fait remarquer que cet aspect des choses qui s'appliquait aux classes du JDK s'appliquait aussi aux miennes. Ce qui m'a permis de gagner en lisibilité.</p>
+<p>À propos de clean code et de la lisibilité du Java 8, j'ai eu le plaisir d'assister à une présentation de Rémi Forax sur les <a href="https://speakerdeck.com/forax/design-pattern-reloaded-parisjug">Design Pattern reloaded en Java 8</a>. Sa présentation bien que très intéressante finissait de manière très ardue. Lorsque je lui ai demandé si ce qu'il avait présenté était du clean code, il m'a répondu "c'est du clean code de demain".</p>
+<p>J'ai beaucoup aimé cette réponse qui signifie pour moi que c'est normal si notre avis sur nos productions Java 8 évolue au cours du temps. Mais surtout, il faut essayer quitte à en faire un peu trop au début. En effet, c'est en poussant le bouchon et en n'ayant pas peur de déconstruire les raisonnements initiaux que j'ai fini par obtenir une version qui me semble raisonnable (même si elle peut être encore futuriste pour certains coéquipiers). Et oui j'ai présenté cet article comme si mon raisonnement avait été linéaire, ce qui est loin d'être le cas.</p>
+<p>J'en profite pour remercier <a href="https://twitter.com/mrcafetux">M. Cafetux</a> pour sa relecture qui en m'ayant poussé dans mes retranchements m'a permis d'obtenir une version bien plus intéressante d'un point de vue fonctionnel.</p>
+<p>Pour conclure, selon moi, grâce aux interfaces fonctionnelles, on a maintenant un code beaucoup plus expressif qu'avant. Au delà de quelques lourdeurs (ex : <code>.stream()</code>) liées à la rétrocompatibilité et ces nouvelles notations qu'il faut acquérir, je trouve que le code ainsi découpé est bien plus facilement lisible. On peut ensuite se plonger ou non dans les parties qui nous posent question.</p>
+<p>Vous trouverez ci-dessous la version actuelle de ma classe.</p>
+<pre>[java]
+private Billing billing;
+private final static int DEFAULT = 0;
+
+public ChunksFromTravelBillingExcluder(final Billing billing) {
+&lt;%%KEEPWHITESPACE%%&gt;    this.billing = billing;
+}
+
+public int count(final Travel travel) {
+&lt;%%KEEPWHITESPACE%%&gt;    return Optional.of(travel)
+&lt;%%KEEPWHITESPACE%%&gt;            .filter(t -&amp;gt; billing != null &amp;amp;&amp;amp;
+&lt;%%KEEPWHITESPACE%%&gt;                         !ArrayUtils.isEmpty(billing.getExcludedFares()))
+&lt;%%KEEPWHITESPACE%%&gt;            .filter(t -&amp;gt; !ArrayUtils.isEmpty(t.getPrices()))
+&lt;%%KEEPWHITESPACE%%&gt;            .map(Travel::getPrices)
+&lt;%%KEEPWHITESPACE%%&gt;            .map(Stream::of)
+&lt;%%KEEPWHITESPACE%%&gt;            .orElse(Stream.empty())
+&lt;%%KEEPWHITESPACE%%&gt;            .mapToInt(this::countExclusionsForPrice)
+&lt;%%KEEPWHITESPACE%%&gt;            .sum();
+}
+
+private int countExclusionsForPrice(final Price price) {
+&lt;%%KEEPWHITESPACE%%&gt;    return Optional.of(price)
+&lt;%%KEEPWHITESPACE%%&gt;            .map(this::findExcludedCustomerTypes)
+&lt;%%KEEPWHITESPACE%%&gt;            .orElse(Stream.empty())
+&lt;%%KEEPWHITESPACE%%&gt;            .mapToInt(customerType -&amp;gt;
+&lt;%%KEEPWHITESPACE%%&gt;                          this.countExclusionsForPriceByCustomerType(price, customerType))
+&lt;%%KEEPWHITESPACE%%&gt;            .sum();
+}
+
+private int countExclusionsForPriceByCustomerType(final Price price,
+&lt;%%KEEPWHITESPACE%%&gt;                                                  final CustomerType customerType) {
+&lt;%%KEEPWHITESPACE%%&gt;    final Optional&amp;lt;FarePolicy&amp;gt; farePolicy = findExcludedFarePolicy(price, customerType);
+&lt;%%KEEPWHITESPACE%%&gt;    final Optional&amp;lt;CustomerFare&amp;gt; customerFare = findExcludedCustomerFare(price,
+&lt;%%KEEPWHITESPACE%%&gt;                                                                         customerType);
+&lt;%%KEEPWHITESPACE%%&gt;    return this.countExclusionsForFare(farePolicy, customerFare);
+}
+
+private int countExclusionsForFare(final Optional&amp;lt;FarePolicy&amp;gt; farePolicy,
+&lt;%%KEEPWHITESPACE%%&gt;                                   final Optional&amp;lt;CustomerFare&amp;gt; customerFare) {
+&lt;%%KEEPWHITESPACE%%&gt;    return farePolicy.isPresent() &amp;amp;&amp;amp; customerFare.isPresent() ?
+&lt;%%KEEPWHITESPACE%%&gt;            farePolicy.get().getChunks().length *
+&lt;%%KEEPWHITESPACE%%&gt;                customerFare.get().getCustomersQuantity() :
+&lt;%%KEEPWHITESPACE%%&gt;            DEFAULT;
+}
+
+private Optional&amp;lt;FarePolicy&amp;gt; findExcludedFarePolicy(final Price price,
+&lt;%%KEEPWHITESPACE%%&gt;                                                    final CustomerType excluded) {
+&lt;%%KEEPWHITESPACE%%&gt;    return findExcludedItem(price,
+&lt;%%KEEPWHITESPACE%%&gt;                            Price::getFarePolicies,
+&lt;%%KEEPWHITESPACE%%&gt;                            c -&amp;gt; c.getCustomerType().equals(excluded));
+}
+
+private Optional&amp;lt;CustomerFare&amp;gt; findExcludedCustomerFare(final Price price,
+&lt;%%KEEPWHITESPACE%%&gt;                                                        final CustomerType excluded) {
+&lt;%%KEEPWHITESPACE%%&gt;    return findExcludedItem(price,
+&lt;%%KEEPWHITESPACE%%&gt;                            Price::getCustomerFares,
+&lt;%%KEEPWHITESPACE%%&gt;                            c -&amp;gt; c.getType().equals(excluded));
+}
+
+private &amp;lt;I&amp;gt; Optional&amp;lt;I&amp;gt; findExcludedItem(final Price price,
+&lt;%%KEEPWHITESPACE%%&gt;                                         final Function&amp;lt;Price, I[]&amp;gt; itemsExtractor,
+&lt;%%KEEPWHITESPACE%%&gt;                                         final Predicate&amp;lt;I&amp;gt; itemsFinder) {
+&lt;%%KEEPWHITESPACE%%&gt;    return Stream.of(itemsExtractor.apply(price))
+&lt;%%KEEPWHITESPACE%%&gt;            .filter(itemsFinder)
+&lt;%%KEEPWHITESPACE%%&gt;            .findFirst();
+}
+
+private Stream&amp;lt;CustomerType&amp;gt; findExcludedCustomerTypes(final Price price) {
+&lt;%%KEEPWHITESPACE%%&gt;    return Stream.of(price.getFarePolicies())
+&lt;%%KEEPWHITESPACE%%&gt;            .filter(fp -&amp;gt; excludedFares().contains(fp.getFareName()))
+&lt;%%KEEPWHITESPACE%%&gt;            .map(FarePolicy::getCustomerType);
+}
+
+private List&amp;lt;FareLabel&amp;gt; excludedFares() {
+&lt;%%KEEPWHITESPACE%%&gt;    return Arrays.asList(billing.getExcludedFares());
+}
+[/java]</pre>

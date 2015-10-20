@@ -1,0 +1,109 @@
+---
+layout: post
+title: TechDays 2012 - partie 2 - patterns et antipatterns
+date: 2012-02-13 08:04:47.000000000 +01:00
+type: post
+published: true
+status: publish
+categories:
+- Actu
+- Evénements
+tags:
+- développement
+- TechDays
+meta:
+  _edit_last: '1'
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/bwcklpt
+  _twitterrelated_short_urlHash: 27cca0f0084eaa06a056efbb4f573fd4
+  sfw_pwd: OmrNQVT26A79
+author:
+  login: pierre irrmann
+  email: pierre.irrmann@arolla.fr
+  display_name: Pierre Irrmann
+  first_name: Pierre
+  last_name: Irrmann
+---
+<h3 style="text-align: justify;"><img src="{{ site.baseurl }}/assets/wcSStkigUgY1gAAAABJRU5ErkJggg==" alt="" width="141" height="76" /></h3>
+<h3 style="text-align: justify;">Compte-rendu général de mon parcours de cette année</h3>
+<h4 style="text-align: justify;">Mardi 7 février (après-midi)</h4>
+<p style="text-align: justify;">Première session de l’après-midi : Patterns &amp; Antipatterns d’architecture pour les applications d’entreprises.</p>
+<p style="text-align: justify;">Après une petite séance de rappels du contexte et de définitions, on entre dans le vif du sujet, avec une présentation d’une architecture classique en couches, avec identification d’un certain nombre de patterns applicables aux différents niveaux…</p>
+<p style="text-align: justify;"><!--more--></p>
+<table width="531" border="1" cellspacing="0" cellpadding="2">
+<tbody>
+<tr>
+<td valign="top" width="123"><strong>Service</strong></td>
+<td valign="top" width="215">Data Transfer Objects</td>
+<td valign="top" width="191"><em>optimisation des échanges réseau par l’utilisation d’objets légers</em></td>
+</tr>
+<tr>
+<td valign="top"></td>
+<td>Remote Façade</td>
+<td valign="top"><em>optimisation des échanges réseaux par regroupement d’opérations</em></td>
+</tr>
+<tr>
+<td valign="top"></td>
+<td valign="top">Service Layer</td>
+<td valign="top"><em>point d’entrée</em></td>
+</tr>
+<tr>
+<td valign="top"><strong>Business</strong></td>
+<td valign="top">Transaction Script</td>
+<td valign="top"><em>orchestration, implémentation directe</em></td>
+</tr>
+<tr>
+<td valign="top"></td>
+<td valign="top">Domain Model</td>
+<td valign="top"><em>représentation du domaine métier, particulièrement adapté au TDD</em></td>
+</tr>
+<tr>
+<td valign="top"><strong>Data Access</strong></td>
+<td valign="top">Repository</td>
+<td valign="top"><em>Isolation du Domain Model et de la persistance</em></td>
+</tr>
+<tr>
+<td valign="top"></td>
+<td valign="top">Data Mapper</td>
+<td valign="top"><em>Traduction OO / RDBMS<br />
+(ORM)</em></td>
+</tr>
+</tbody>
+</table>
+<p style="text-align: justify;">Pour chaque pattern, les avantages et inconvénients principaux sont listés, puis un choix classique d’architecture est effectué pour présenter un exemple. Évidemment, “Transaction Script” est rapidement écarté…</p>
+<p style="text-align: justify;">L’exemple se base sur l’offre Microsoft.Net standard, en utilisant Entity Framework pour mettre en œuvre le Repository, et WCF pour implémenter la Remote Façade. Des DTO sont mis en place pour optimiser les échanges.</p>
+<p style="text-align: justify;">Une fois ces patterns abordés, la session prend une autre direction, pour introduire les notions de DDD et CQRS. A ce moment, Cyrille commence à se trémousser sur sa chaise : on parle de DDD, d’Eric Evans, de bible bleue… Les principes fondamentaux sont présentés :</p>
+<ul style="text-align: justify;">
+<li>La vraie difficulté est dans le domaine et non dans les aspects techniques.</li>
+<li>Le design conditionne jusqu'où un projet peut devenir complexe ou non.</li>
+</ul>
+<p style="text-align: justify;">En conséquence, les priorités d’une approche DDD sont les suivantes :</p>
+<ol style="text-align: justify;">
+<li>Comprendre le domaine du métier</li>
+<li>Utiliser des modèles pour représenter tout design complexe</li>
+</ol>
+<p style="text-align: justify;">La notion d’ “Ubiquitous Language” est utilisée. L’UL est le langage qui permet de définir la sémantique du projet, pour tous les acteurs concernés, sans ambigüité.</p>
+<p style="text-align: justify;">On passe ensuite à une rapide présentation de CQRS (Command &amp; Query Responsibility Segregation). Les objectifs de cette démarche sont les suivants :</p>
+<ul style="text-align: justify;">
+<li>Réduire la complexité du modèle</li>
+<li>Améliorer la scalabilité de l’architecture</li>
+</ul>
+<p style="text-align: justify;">Le principe de base part d’un constat : il existe deux types d’actions, des “Commands” et des “Queries”.</p>
+<div style="text-align: justify;">
+<table width="640" border="1" cellspacing="0" cellpadding="2" align="center">
+<tbody>
+<tr>
+<td align="center" valign="top" width="346"><strong>Command</strong></td>
+<td align="center" valign="top" width="292"><strong>Query</strong></td>
+</tr>
+<tr>
+<td align="center" valign="top" width="341">Modification</td>
+<td align="center" valign="top" width="297">Pas de modification</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="text-align: justify;">L’idée est que les actions de type “Query” ne nécessitent pas autant de complexité que les actions “Command”. Il n’est donc pas nécessaire de mettre en place tout le modèle pour ces actions, on peut faire l’économie de certaines couches et réduire la complexité, en améliorant en même temps la performance.</p>
+<p style="text-align: justify;">Le temps imparti pour la démo n’a malheureusement pas pu permettre de détailler plus ce point et de montrer des exemples de mise en œuvre. En regrettant que les notions soient abordées aussi rapidement, j’ai tout de même apprécié ces introductions.</p>
+<p style="text-align: justify;">La session suivante sera traitée à part car il s’agit d’un sujet qui prend une place particulière : une présentation des Type Providers en F# 3.0, par Don Syme en personne !</p>
+<p style="text-align: justify;"><a href="http://twitter.com/#%21/pirrmann">@pirrmann</a></p>

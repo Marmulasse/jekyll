@@ -1,0 +1,454 @@
+---
+layout: post
+title: Présentation de NBuilder
+date: 2015-03-09 08:55:09.000000000 +01:00
+type: post
+published: true
+status: publish
+categories:
+- Outils
+- Programmation
+tags:
+- Nbuilder
+- nfluent
+meta:
+  _wpcom_is_markdown: '1'
+  _edit_last: '1'
+  sfw_pwd: 8KvRkTPvY5a9
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/korzufg
+  _twitterrelated_short_urlHash: 44eff1397b897bb3083f944d0e230c21
+author:
+  login: didier cauvin
+  email: didier.cauvin@arolla.fr
+  display_name: didier cauvin
+  first_name: Didier
+  last_name: Cauvin
+---
+<h1>Introduction</h1>
+<p>NBuilder est une bibliothèque qui permet de créer des objets pour vos tests de manière rapide et fluide grâce à son interface "fluent" (<a title="Présentation de NFluent" href="http://www.arolla.fr/blog/2014/07/presentation-de-nfluent/" target="_blank">un peu à la manière de NFluent</a>). Je vais tenter au travers de cet article de vous en présenter les bases.</p>
+<p>(NBuilder est disponible via nuget. Vous pouvez donc l'installer via l'interface de Visual Studio ou à coup de Install-Package NBuilder)</p>
+<h1>1 - Premiers pas</h1>
+<p>Commençons par nous concocter une petite classe "Product", qui nous servira tout au long de l'article. Définissons un produit comme ayant les propriétés suivantes :<br />
+<code><br />
+public class Product<br />
+{<br />
+public int Id { get; set; }<br />
+public string Name { get; set; }<br />
+public string BrandName { get; set; }<br />
+public double Price { get; set; }<br />
+public int Stock { get; set; }<br />
+}<br />
+</code></p>
+<p>NBuilder propose deux méthodes de création :</p>
+<ul>
+<li>Une méthode de création de liste : CreateListOfSize</li>
+<li>Une méthode de création d'objet : CreateNew</li>
+</ul>
+<p>Commençons par créer un produit. Voici comment faire avec NBuilder :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateProduct()<br />
+{<br />
+var product = Builder<br />
+.CreateNew()<br />
+.Build();<br />
+Check.That(product).IsNotNull();<br />
+}<br />
+</code></p>
+<p>Un petit coup de NFluent pour vérifier que notre produit a bien été instancié et voilà le travail!</p>
+<p>Mais regardons d'un peu plus prés l'objet fraîchement créé. En effet, comme nous n'avons à aucun moment initialisé les propriétés de notre produit, on peut se demander ce qu'il contient. Voici le résultat :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "Name1",<br />
+"BrandName": "BrandName1",<br />
+"Price": 1,<br />
+"Stock": 1<br />
+}]</p>
+<p>NBuilder les a initialisées pour nous. Plutôt pratique non?</p>
+<p>Poussons l'exercice un peu plus loin. Imaginons maintenant que nous ayons besoin de créer un produit sur une marque en particulier. Voici comment résoudre le problème avec NBuilder :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateProduct()<br />
+{<br />
+var product = Builder<br />
+.CreateNew()<br />
+.With(x =&gt; x.BrandName = "FooBrand")<br />
+.Build();<br />
+Check.That(product.BrandName).IsEqualTo("FooBrand");<br />
+}<br />
+</code></p>
+<p>On obtient donc :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "Name1",<br />
+"BrandName": "FooBrand",<br />
+"Price": 1,<br />
+"Stock": 1<br />
+}]</p>
+<p>Si on veut initialiser un produit avec un nom et une marque, on ferait :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateProduct()<br />
+{<br />
+var product = Builder<br />
+.CreateNew()<br />
+.With(x =&gt; x.Name = "MyProduct")<br />
+.And(x =&gt; x.BrandName = "FooBrand")<br />
+.Build();<br />
+Check.That(product.Name).IsEqualTo("MyProduct");<br />
+Check.That(product.BrandName).IsEqualTo("FooBrand");<br />
+}<br />
+</code></p>
+<p>On a donc :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "MyProduct",<br />
+"BrandName": "FooBrand",<br />
+"Price": 1,<br />
+"Stock": 1<br />
+}]</p>
+<p>Le résultat ne vous surprendra sûrement pas. Vous avez compris le principe je suppose! ;)</p>
+<h1>2 - Les listes</h1>
+<p>Imaginons que nous voulions, pour les besoins d'un test, créer une liste de 5 produits. Avec NBuilder, rien de plus simple :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateListOf5Products()<br />
+{<br />
+var products = Builder<br />
+.CreateListOfSize(5)<br />
+.Build();<br />
+Check.That(products).HasSize(5);<br />
+}<br />
+</code></p>
+<p>Résultat :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "Name1",<br />
+"BrandName": "BrandName1",<br />
+"Price": 1,<br />
+"Stock": 1<br />
+}, {<br />
+"Id": 2,<br />
+"Name": "Name2",<br />
+"BrandName": "BrandName2",<br />
+"Price": 2,<br />
+"Stock": 2<br />
+}, {<br />
+"Id": 3,<br />
+"Name": "Name3",<br />
+"BrandName": "BrandName3",<br />
+"Price": 3,<br />
+"Stock": 3<br />
+}, {<br />
+"Id": 4,<br />
+"Name": "Name4",<br />
+"BrandName": "BrandName4",<br />
+"Price": 4,<br />
+"Stock": 4<br />
+}, {<br />
+"Id": 5,<br />
+"Name": "Name5",<br />
+"BrandName": "BrandName5",<br />
+"Price": 5,<br />
+"Stock": 5<br />
+}]</p>
+<p>Sans surprise, NBuilder a initialisé les propriétés automatiquement.</p>
+<p>Créons maintenant un jeu de test avec des produits issus d'une même marque. En utilisant la méthode All() puis en appliquant à la propriété "Name" la valeur "FooBrand" avec la méthode "With", on obtient le code suivant :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateListOf5ProductsWithSameBrandName()<br />
+{<br />
+var products = Builder<br />
+.CreateListOfSize(5)<br />
+.All()<br />
+.With(x =&gt; x.BrandName = "FooBrand")<br />
+.Build();<br />
+var brandNames = products.Select(x =&gt; x.BrandName).Distinct();<br />
+Check.That(brandNames).HasSize(1);<br />
+}<br />
+</code></p>
+<p>Si on examine les propriétés, on voit bien que seule la propriété "BrandName" a été initialisée comme nous le souhaitions :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "Name1",<br />
+"BrandName": "FooBrand",<br />
+"Price": 1,<br />
+"Stock": 1<br />
+}, {<br />
+"Id": 2,<br />
+"Name": "Name2",<br />
+"BrandName": "FooBrand",<br />
+"Price": 2,<br />
+"Stock": 2<br />
+}, {<br />
+"Id": 3,<br />
+"Name": "Name3",<br />
+"BrandName": "FooBrand",<br />
+"Price": 3,<br />
+"Stock": 3<br />
+}, {<br />
+"Id": 4,<br />
+"Name": "Name4",<br />
+"BrandName": "FooBrand",<br />
+"Price": 4,<br />
+"Stock": 4<br />
+}, {<br />
+"Id": 5,<br />
+"Name": "Name5",<br />
+"BrandName": "FooBrand",<br />
+"Price": 5,<br />
+"Stock": 5<br />
+}]</p>
+<p>Évidemment, comme pour l'instanciation d'un objet, on peut initialiser autant de propriétés qu'on veut dans une liste :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateListOf5ProductsWithSameBrandNameAndPrice()<br />
+{<br />
+var products = Builder<br />
+.CreateListOfSize(5)<br />
+.All()<br />
+.With(x =&gt; x.BrandName = "FooBrand")<br />
+.And(x =&gt; x.Price = 50.0d)<br />
+.Build();<br />
+var subs = products.Select(x =&gt; new { x.Price, x.BrandName }).Distinct();<br />
+Check.That(subs).HasSize(1);<br />
+}<br />
+</code></p>
+<p>Et voici la représentation de la liste :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "Name1",<br />
+"BrandName": "FooBrand",<br />
+"Price": 50,<br />
+"Stock": 1<br />
+}, {<br />
+"Id": 2,<br />
+"Name": "Name2",<br />
+"BrandName": "FooBrand",<br />
+"Price": 50,<br />
+"Stock": 2<br />
+}, {<br />
+"Id": 3,<br />
+"Name": "Name3",<br />
+"BrandName": "FooBrand",<br />
+"Price": 50,<br />
+"Stock": 3<br />
+}, {<br />
+"Id": 4,<br />
+"Name": "Name4",<br />
+"BrandName": "FooBrand",<br />
+"Price": 50,<br />
+"Stock": 4<br />
+}, {<br />
+"Id": 5,<br />
+"Name": "Name5",<br />
+"BrandName": "FooBrand",<br />
+"Price": 50,<br />
+"Stock": 5<br />
+}]</p>
+<p>On peut aussi tout à fait initialiser des valeurs différentes entre les objets de la liste :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateListOf5ProductsWithSameBrandNamesAndStockForFirst2Elements()<br />
+{<br />
+var products = Builder<br />
+.CreateListOfSize(5)<br />
+.TheFirst(2)<br />
+.With(x =&gt; x.BrandName = "FooBrand")<br />
+.And(x =&gt; x.Stock = 3)<br />
+.TheLast(3)<br />
+.With(x =&gt; x.BrandName = "MikeBrand")<br />
+.And(x =&gt; x.Stock = 0)<br />
+.Build();<br />
+var subs = products.Select(x =&gt; new { x.Stock, x.BrandName }).Distinct();<br />
+Check.That(subs).HasSize(2);<br />
+}<br />
+</code></p>
+<p>Ici, j'ai demandé à NBuilder de me créer une liste de 5 produits initialisés comme suit :</p>
+<ul>
+<li>Pour les deux premiers produits, initialiser avec comme nom de marque "FooBrand" et un stock de 3</li>
+<li>Pour les trois derniers, initialiser avec comme nom de marque "MikeBrand" et un stock de 0</li>
+</ul>
+<p>On obtient donc :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "Name1",<br />
+"BrandName": "FooBrand",<br />
+"Price": 1,<br />
+"Stock": 3<br />
+}, {<br />
+"Id": 2,<br />
+"Name": "Name2",<br />
+"BrandName": "FooBrand",<br />
+"Price": 2,<br />
+"Stock": 3<br />
+}, {<br />
+"Id": 3,<br />
+"Name": "Name3",<br />
+"BrandName": "MikeBrand",<br />
+"Price": 3,<br />
+"Stock": 0<br />
+}, {<br />
+"Id": 4,<br />
+"Name": "Name4",<br />
+"BrandName": "MikeBrand",<br />
+"Price": 4,<br />
+"Stock": 0<br />
+}, {<br />
+"Id": 5,<br />
+"Name": "Name5",<br />
+"BrandName": "MikeBrand",<br />
+"Price": 5,<br />
+"Stock": 0<br />
+}]</p>
+<h1>3 - Les constructeurs de l'extrême</h1>
+<p>NBuilder permet aussi d'instancier un objet via son constructeur. Pour se faire, rajoutons à notre classe "Product" un constructeur par défaut ne prenant pas de paramètre, et un autre en prenant trois : un nom de produit, un nom de marque et un prix :<br />
+<code><br />
+public Product()<br />
+{<br />
+}</code></p>
+<p>public Product(string name, string brandName, double price)<br />
+{<br />
+Name = name;<br />
+BrandName = brandName;<br />
+Price = price;<br />
+}</p>
+<p>Pour instancier un produit via son constructeur, NBuilder propose la méthode WithConstructor, qui s'utilise comme suit :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateProductWithConstructor()<br />
+{<br />
+var product = Builder<br />
+.CreateNew()<br />
+.WithConstructor(() =&gt; new Product("MyProduct", "FooBrand", 90.0d))<br />
+.Build();<br />
+Check.That(product.Name).IsEqualTo("MyProduct");<br />
+Check.That(product.BrandName).IsEqualTo("FooBrand");<br />
+Check.That(product.Price).IsEqualTo(90.0d);<br />
+}<br />
+</code></p>
+<p>Ce qui donne :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "MyProduct",<br />
+"BrandName": "FooBrand",<br />
+"Price": 90,<br />
+"Stock": 1<br />
+}]</p>
+<p>On peut évidemment appliquer ceci aux listes. Par exemple, admettons que je veuille créer deux produits avec une même marque et trois autres avec une autre, je ferais comme ceci :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateListOf5ProductsWithConstructor()<br />
+{<br />
+var products = Builder<br />
+.CreateListOfSize(5)<br />
+.TheFirst(2)<br />
+.WithConstructor(() =&gt; new Product("FooBrand"))<br />
+.TheLast(3)<br />
+.WithConstructor(() =&gt; new Product("BarBrand"))<br />
+.Build();<br />
+var subs = products.Select(x =&gt; x.BrandName).Distinct();<br />
+Check.That(subs).HasSize(2);<br />
+}<br />
+</code></p>
+<p>J'aurais bien sûr au préalable ajouté le constructeur suivant :<br />
+<code><br />
+public Product(string brandName)<br />
+{<br />
+BrandName = brandName;<br />
+}<br />
+</code></p>
+<p>On obtient :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "Name1",<br />
+"BrandName": "FooBrand",<br />
+"Price": 1,<br />
+"Stock": 1<br />
+}, {<br />
+"Id": 2,<br />
+"Name": "Name2",<br />
+"BrandName": "FooBrand",<br />
+"Price": 2,<br />
+"Stock": 2<br />
+}, {<br />
+"Id": 3,<br />
+"Name": "Name3",<br />
+"BrandName": "BarBrand",<br />
+"Price": 3,<br />
+"Stock": 3<br />
+}, {<br />
+"Id": 4,<br />
+"Name": "Name4",<br />
+"BrandName": "BarBrand",<br />
+"Price": 4,<br />
+"Stock": 4<br />
+}, {<br />
+"Id": 5,<br />
+"Name": "Name5",<br />
+"BrandName": "BarBrand",<br />
+"Price": 5,<br />
+"Stock": 5<br />
+}]</p>
+<h1>4 - Étendre les possibilités</h1>
+<p>A l'instar de NFluent, on peut aussi étendre les fonctionnalités de NBuilder. Supposons que je veuille créer mes objets "Product" avec par défaut leur propriété "Name" de la forme "MyProduct_{id}", je ferais comme ceci :</p>
+<p><code><br />
+public static class NBuilderExtensions<br />
+{<br />
+public static IOperable WithCustomProductName(this IOperable operable)<br />
+{<br />
+((IDeclaration)operable).ObjectBuilder.With(x =&gt; x.Name = "MyProduct_" + x.Id);<br />
+return operable;<br />
+}<br />
+}<br />
+</code></p>
+<p>Ainsi, dans le code, cela se traduit de la manière suivante :<br />
+<code><br />
+[TestMethod]<br />
+public void CreateListOf5ProductsWithCustomNames()<br />
+{<br />
+var products = Builder<br />
+.CreateListOfSize(5)<br />
+.All()<br />
+.WithCustomProductName()<br />
+.Build();<br />
+Check.That(products.Extracting("Name")).ContainsExactly("MyProduct_1", "MyProduct_2", "MyProduct_3", "MyProduct_4", "MyProduct_5");<br />
+}<br />
+</code></p>
+<p>Et ainsi nous obtenons :</p>
+<p>[{<br />
+"Id": 1,<br />
+"Name": "MyProduct_1",<br />
+"BrandName": "BrandName1",<br />
+"Price": 1,<br />
+"Stock": 1<br />
+}, {<br />
+"Id": 2,<br />
+"Name": "MyProduct_2",<br />
+"BrandName": "BrandName2",<br />
+"Price": 2,<br />
+"Stock": 2<br />
+}, {<br />
+"Id": 3,<br />
+"Name": "MyProduct_3",<br />
+"BrandName": "BrandName3",<br />
+"Price": 3,<br />
+"Stock": 3<br />
+}, {<br />
+"Id": 4,<br />
+"Name": "MyProduct_4",<br />
+"BrandName": "BrandName4",<br />
+"Price": 4,<br />
+"Stock": 4<br />
+}, {<br />
+"Id": 5,<br />
+"Name": "MyProduct_5",<br />
+"BrandName": "BrandName5",<br />
+"Price": 5,<br />
+"Stock": 5<br />
+}]</p>
+<p>Vous l'aurez compris, les possibilités sont nombreuses. Ainsi, je vous invite à fouiller par vous-même pour vous rendre compte à quel point NBuilder peut vous faire gagner bien du temps.</p>
+<h1>5 - Conclusion</h1>
+<p>En conclusion, je vous recommande fortement cette petite bibliothèque qui peut être au passage un bon complément à NFluent si vous souhaitez écrire des tests en mode "fluent" ;) Elle est facile d'accès et permet rapidement de se construire des jeux de données sans le moindre mal. Evidemment, je n'ai pas abordé toutes les fonctionnalités. Pour cela, je vous invite à vous rendre ici pour de plus amples informations : <a href="https://code.google.com/p/nbuilder/wiki/Overview_HowTo" target="_blank">https://code.google.com/p/nbuilder/wiki/Overview_HowTo</a>. Et le github qui va bien : <a href="https://github.com/garethdown44/nbuilder" target="_blank">https://github.com/garethdown44/nbuilder</a></p>
+<p>Happy testing!</p>

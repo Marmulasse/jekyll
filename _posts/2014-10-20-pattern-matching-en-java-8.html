@@ -1,0 +1,309 @@
+---
+layout: post
+title: Pattern matching en Java 8
+date: 2014-10-20 13:03:39.000000000 +02:00
+type: post
+published: true
+status: publish
+categories:
+- Bonnes pratiques de dév
+- Fonctionnel
+- Programmation
+tags:
+- fonctionnel
+- java
+- java8
+- lambda
+- programming
+meta:
+  _syntaxhighlighter_encoded: '1'
+  _edit_last: '1'
+  _wpcom_is_markdown: '1'
+  sfw_pwd: hQJzT0ZknX6W
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/p6jfb95
+  _twitterrelated_short_urlHash: 54d7160b086e4edf04096fad8b8528e2
+  _post_restored_from: a:3:{s:20:"restored_revision_id";i:2820;s:16:"restored_by_user";i:1;s:13:"restored_time";i:1413802654;}
+author:
+  login: patrick giry
+  email: patrick.giry@arolla.fr
+  display_name: patrick giry
+  first_name: Patrick
+  last_name: Giry
+---
+<p>Le filtrage par motif, en anglais <strong>pattern matching</strong>, consiste pour une valeur donnée à voir si elle correspond à un motif ou pas. Si c'est le cas une action est déclenchée.</p>
+<p>De manière intrinsèque le langage Java possède la structure <code>switch ... case</code>.</p>
+<p>On peut l'utiliser avec des entiers (byte, short et int):</p>
+<p>[code language="java"]<br />
+    static String toGender(int genderCode) {<br />
+         final String gender;<br />
+         switch (genderCode) {<br />
+             case 1: gender = &quot;man&quot;;<br />
+                 break;<br />
+             case 2: gender = &quot;woman&quot;;<br />
+                 break;<br />
+             default:<br />
+                 throw new IllegalArgumentException(&quot;Unknown gender for code &quot; + genderCode);<br />
+         }<br />
+         return gender;<br />
+    }</p>
+<p>    assertThat(toGender(1)).isEqualTo(&quot;man&quot;);<br />
+[/code]</p>
+<p>On peut utiliser une énumération pour définir les constantes à tester:</p>
+<p>[code language="java"]<br />
+    static String toGender(GenderCode genderCode) {<br />
+        final String gender;<br />
+        switch (genderCode) {<br />
+            case MAN: gender = &quot;man&quot;;<br />
+                break;<br />
+            case WOMAN: gender = &quot;woman&quot;;<br />
+                break;<br />
+            default:<br />
+                throw new IllegalArgumentException(&quot;Unknown gender for code &quot; + genderCode);<br />
+        }<br />
+        return gender;<br />
+    }</p>
+<p>    static enum GenderCode {<br />
+        MAN,<br />
+        WOMAN<br />
+    }</p>
+<p>    assertThat(toGender(GenderCode.MAN)).isEqualTo(&quot;man&quot;);<br />
+[/code]</p>
+<p>On peut l'utiliser également avec des caractères:</p>
+<p>[code language="java"]<br />
+    static String toCivility(char civilityCode) {<br />
+        final String civility;<br />
+        switch (civilityCode) {<br />
+            case 'M' : civility = &quot;Monsieur&quot;;<br />
+                break;<br />
+            case 'W' : civility =  &quot;Madame&quot;;<br />
+                break;<br />
+            default:<br />
+                throw new IllegalArgumentException(&quot;Unknown civility for code &quot; + civilityCode);<br />
+        }<br />
+        return civility;<br />
+    }</p>
+<p>    assertThat(toCivility('M')).isEqualTo(&quot;Monsieur&quot;);<br />
+[/code]</p>
+<p>Depuis le JDK 1.7 on peut l'utiliser également avec des chaînes de caractères:</p>
+<p>[code language="java"]<br />
+     static String toCivility(String abbreviation) {<br />
+        final String civility;<br />
+        switch (abbreviation) {<br />
+            case &quot;Mr.&quot; : civility = &quot;Monsieur&quot;;<br />
+                break;<br />
+            case &quot;Mrs.&quot; : civility =  &quot;Madame&quot;;<br />
+                break;<br />
+            default:<br />
+                throw new IllegalArgumentException(&quot;Unknown civility for abbreviation &quot; + abbreviation);<br />
+        }<br />
+        return civility;<br />
+     }</p>
+<p>     assertThat(toCivility(&quot;Mrs.&quot;)).isEqualTo(&quot;Madame&quot;);<br />
+[/code]</p>
+<p>D'autres langages permettent de faire du <strong>pattern matching</strong> sur des choses plus complexes comme les types par exemple.<br />
+Nous allons donc voir comment implémenter le <strong>pattern matching</strong> et comment Java 8 nous permet de réduire le code nécessaire pour le réaliser.</p>
+<p>Essayons d'implémenter un <strong>pattern matching</strong> en fonction du type de la valeur à tester. Il nous faut donc une méthode qui prend une valeur en entrée et nous retourne le résultat d'instruction si la valeur valide une condition (ici le type de la valeur) :</p>
+<p>[code language="java"]<br />
+    public interface PatternMatching&lt;T, R&gt; {</p>
+<p>        Optional&lt;R&gt; matches(V value);</p>
+<p>    }<br />
+[/code]</p>
+<p>Le JDK 8 possède une classe <code>java.util.Optional</code> qui permet d'indiquer que la réponse d'une méthode peut être le résultat attendu ou rien. Dans notre exemple si une valeur correspond à un type attendu la méthode <code>matches()</code> retournera un <code>Optional</code> qui contiendra le résultat de l'action exécutée par le <strong>pattern matching</strong>.</p>
+<p>[code language="java"]<br />
+    assertThat(pm.matches(42)).isEqualTo(Optional.of(&quot;Integer: 42&quot;));<br />
+[/code]</p>
+<p>Dans le cas contraire la méthode <code>matches()</code> retourner un <code>Optional.empty()</code>.</p>
+<p>[code language="java"]<br />
+    assertThat(pm.matches(43.1)).isEqualTo(Optional.empty());<br />
+[/code]</p>
+<p>Maintenant il nous faut pouvoir définir un <strong>pattern matching</strong> qui pour une condition donnée associe une action et que ce soit appelé par la méthode <code>matches()</code>.<br />
+Le JDK 8 permet de définir des méthodes statiques dans une interface. On va donc enrichir notre interface d'une méthode de fabrique. Elle prendra en paramètre un prédicat pour la condition et une fonction pour l'action associée:</p>
+<p>[code language="java"]<br />
+    public interface PatternMatching&lt;T, R&gt; {</p>
+<p>        static &lt;T, R&gt; PatternMatching&lt;T, R&gt; when(Predicate&lt;T&gt; predicate, Function&lt;T, R&gt; action) { ... }</p>
+<p>        Optional&lt;R&gt; matches(V value);</p>
+<p>    }<br />
+[/code]</p>
+<p>Les interfaces <code>java.util.function.Predicate</code> et <code>java.util.function.Function</code> sont fournies par le JDK 8 pour définir respectivement des prédicats et des fonctions.<br />
+On peut appeler maintenant cette méthode:</p>
+<p>[code language="java"]<br />
+    final PatternMatching&lt;? super Number, String&gt; pm =<br />
+                    when(new Predicate&lt;Number&gt;() {<br />
+                        @Override<br />
+                        public boolean test(Number number) {<br />
+                            return Integer.class.isInstance(number);<br />
+                        }<br />
+                    }, new Function&lt;Number, String&gt;() {<br />
+                        @Override<br />
+                        public String apply(Number x) {<br />
+                            return &quot;Integer: &quot; + x;<br />
+                        }<br />
+                    });</p>
+<p>    assertThat(pm.matches(42)).isEqualTo(Optional.of(&quot;Integer: 42&quot;));<br />
+[/code]</p>
+<p>Avec le JDK 8 on peut simplifier cet appel en utilisant une référence de méthode pour tester que la valeur est une instance d'<code>Integer</code> et une expression lambda pour définir l'action à exécuter si le prédicat est vrai.</p>
+<p>[code language="java"]<br />
+    final PatternMatching&lt;? super Number, String&gt; pm =<br />
+                when(Integer.class::isInstance, x -&gt; &quot;Integer: &quot; + x);</p>
+<p>    assertThat(pm.matches(42)).isEqualTo(Optional.of(&quot;Integer: 42&quot;));<br />
+[/code]</p>
+<p>Le <strong>pattern matching</strong> peut être créé et défini à partir d'une expression lambda:</p>
+<p>[code language="java"]<br />
+    public interface PatternMatching&lt;T, R&gt; {</p>
+<p>        static &lt;T, R&gt; PatternMatching&lt;T, R&gt; when(Predicate&lt;T&gt; predicate, Function&lt;T, R&gt; action) {<br />
+            Objects.requireNonNull(predicate);<br />
+            Objects.requireNonNull(action);</p>
+<p>            return value -&gt; {<br />
+                if (predicate.test(value)) {<br />
+                    return Optional.of(action.apply(value));<br />
+                } else {<br />
+                    return Optional.empty();<br />
+                }<br />
+            };<br />
+        }</p>
+<p>        Optional&lt;R&gt; matches(V value);<br />
+    }</p>
+<p>[/code]</p>
+<p>Après s'être assurés que le prédicat et l'action sont bien définis, on crée une lambda qui prend la valeur en argument de la méthode <code>matches()</code>, appelle le prédicat puis l'action si celui-ci est vrai. On met le résultat de l'action dans un <code>Optional</code>.<br />
+L'action ne peut pas retourner de <code>null</code>, c'est grâce à ça que l'on sait si une condition a été remplie et que l'action correspondante a été exécutée.<br />
+Si l'action doit retourner malgré tout <code>null</code> il faut utiliser le design pattern <code>Null Object</code> ou définir le résultat comme un <code>Optional</code>.</p>
+<p>[code language="java"]<br />
+    final PatternMatching&lt;? super Number, Optional&lt;String&gt;&gt; pm =<br />
+                    when(Integer.class::isInstance, x -&gt; Optional.&lt;String&gt;empty());</p>
+<p>    assertThat(pm.matches(42)).isEqualTo(Optional.of(Optional.empty()));<br />
+[/code]</p>
+<p>Si le prédicat est faux un <code>Optional.empty()</code> est retourné.</p>
+<p>[code language="java"]<br />
+    PatternMatching&lt;? super Number, String&gt; pm =<br />
+                    when(Integer.class::isInstance, x -&gt; &quot;Integer: &quot; + x);</p>
+<p>    assertThat(pm.matches(43.1)).isEqualTo(Optional.empty());<br />
+[/code]</p>
+<p>On veut pouvoir définir plusieurs conditions dans notre <strong>pattern matching</strong> comme ceci :</p>
+<p>[code language="java"]<br />
+    final PatternMatching&lt;? super Number, String&gt; pm =<br />
+                when(Integer.class::isInstance, x -&gt; &quot;Integer: &quot; + x)<br />
+                .orWhen(Double.class::isInstance, x -&gt; &quot;Double: &quot; + x);</p>
+<p>    assertThat(pm.matches(42)).isEqualTo(Optional.of(&quot;Integer: 42&quot;));<br />
+    assertThat(pm.matches(1.42)).isEqualTo(Optional.of(&quot;Double: 1.42&quot;));<br />
+[/code]</p>
+<p>En JDK 8 on peut définir des implémentations de méthode par défaut dans une interface. C'est ce qu'on utilise pour <code>orWhen()</code>.</p>
+<p>[code language="java"]<br />
+    public interface PatternMatching&lt;T, R&gt; {<br />
+           ...</p>
+<p>         default PatternMatching&lt;T, R&gt; orWhen(Predicate&lt;T&gt; predicate, Function&lt;T, R&gt; action) {<br />
+             Objects.requireNonNull(predicate);<br />
+             Objects.requireNonNull(action);</p>
+<p>             return value -&gt; {<br />
+                 final Optional&lt;R&gt; result = matches(value);<br />
+                 if (result.isPresent()) {<br />
+                     return result;<br />
+                 } else {<br />
+                     if (predicate.test(value)) {<br />
+                         return Optional.of(action.apply(value));<br />
+                     } else {<br />
+                         return Optional.empty();<br />
+                     }<br />
+                 }<br />
+             };</p>
+<p>         }<br />
+           ...<br />
+    }<br />
+[/code]</p>
+<p>Pour faire appelle à <code>orWhen()</code> on doit avoir déjà une instance de <code>PatternMatching</code>, créée par <code>when()</code> par exemple. C'est pour cette raison que la lambda qui implémente <code>matches()</code> dans <code>orWhen()</code> appelle <code>matches(value)</code> pour voir si le motif précédent a déclenché une action.<br />
+Si aucune action n'a été déclenchée on appelle le prédicat du second motif, et s'il est vrai on déclenche l'action associée.</p>
+<p>On complète pour pouvoir déclencher une action si aucun motif ne correspond à la valeur.</p>
+<p>[code language="java"]<br />
+    public interface PatternMatching&lt;T, R&gt; {<br />
+           ...</p>
+<p>         default PatternMatching&lt;T, R&gt; otherwise(Function&lt;T, R&gt; action) {<br />
+             Objects.requireNonNull(action);</p>
+<p>             return value -&gt; {<br />
+                 final Optional&lt;R&gt; result = matches(value);<br />
+                 if (result.isPresent()) {<br />
+                     return result;<br />
+                 } else {<br />
+                     return Optional.of(action.apply(value));<br />
+                 }<br />
+             };<br />
+         }<br />
+           ...<br />
+    }<br />
+[/code]</p>
+<p>Si on appelle <code>otherwise()</code> en dernière position le contrat est rempli.</p>
+<p>[code language="java"]<br />
+    PatternMatching&lt;? super String, String&gt; pm = when(x-&gt; false, x -&gt; &quot;&quot;)<br />
+                    .otherwise(x -&gt; &quot;got this object: &quot; + x);</p>
+<p>    assertThat(pm.matches(&quot;foo&quot;)).isEqualTo(Optional.of(&quot;got this object: foo&quot;));<br />
+[/code]</p>
+<p>Voilà on vient d'implémenter un <strong>pattern matching</strong> en 60 lignes environ :</p>
+<p>[code language="java"]<br />
+    import java.util.Objects;<br />
+    import java.util.Optional;<br />
+    import java.util.function.Function;<br />
+    import java.util.function.Predicate;</p>
+<p>    @FunctionalInterface<br />
+    public interface PatternMatching&lt;T, R&gt; {</p>
+<p>        static &lt;T, R&gt; PatternMatching&lt;T, R&gt; when(Predicate&lt;T&gt; predicate, Function&lt;T, R&gt; action) {<br />
+            Objects.requireNonNull(predicate);<br />
+            Objects.requireNonNull(action);</p>
+<p>            return value -&gt; {<br />
+                if (predicate.test(value)) {<br />
+                    return Optional.of(action.apply(value));<br />
+                } else {<br />
+                    return Optional.empty();<br />
+                }<br />
+            };<br />
+        }</p>
+<p>        default PatternMatching&lt;T, R&gt; otherwise(Function&lt;T, R&gt; action) {<br />
+            Objects.requireNonNull(action);</p>
+<p>            return value -&gt; {<br />
+                final Optional&lt;R&gt; result = matches(value);<br />
+                if (result.isPresent()) {<br />
+                    return result;<br />
+                } else {<br />
+                    return Optional.of(action.apply(value));<br />
+                }<br />
+            };<br />
+        }</p>
+<p>        default PatternMatching&lt;T, R&gt; orWhen(Predicate&lt;T&gt; predicate, Function&lt;T, R&gt; action) {<br />
+            Objects.requireNonNull(predicate);<br />
+            Objects.requireNonNull(action);</p>
+<p>            return value -&gt; {<br />
+                final Optional&lt;R&gt; result = matches(value);<br />
+                if (result.isPresent()) {<br />
+                    return result;<br />
+                } else {<br />
+                    if (predicate.test(value)) {<br />
+                        return Optional.of(action.apply(value));<br />
+                    } else {<br />
+                        return Optional.empty();<br />
+                    }<br />
+                }<br />
+            };</p>
+<p>        }</p>
+<p>        Optional&lt;R&gt; matches(T value);</p>
+<p>    }<br />
+[/code]</p>
+<p>On peut l'utiliser avec des chaînes de caractères:</p>
+<p>[code language="java"]<br />
+    PatternMatching&lt;? super String, String&gt; pm = when(&quot;world&quot;::equals, x -&gt; &quot;Hello, &quot; + x);</p>
+<p>    assertThat(pm.matches(&quot;world&quot;)).isEqualTo(Optional.of(&quot;Hello, world&quot;));</p>
+<p>    assertThat(pm.matches(&quot;Bob&quot;)).isEqualTo(Optional.empty());<br />
+[/code]</p>
+<p>On peut l'utiliser avec des entiers:</p>
+<p>[code language="java"]<br />
+    PatternMatching&lt;? super Integer, String&gt; pm = when(x -&gt; x == 42, x -&gt; &quot;forty-two&quot;);</p>
+<p>    assertThat(pm.matches(42)).isEqualTo(Optional.of(&quot;forty-two&quot;));</p>
+<p>    assertThat(pm.matches(43)).isEqualTo(Optional.empty());<br />
+[/code]</p>
+<p>On peut faire des combinaisons:</p>
+<p>[code language="java"]<br />
+    PatternMatching&lt;Object, String&gt; pm = when(&quot;world&quot;::equals, x -&gt; &quot;Hello, &quot; + x)<br />
+                   .orWhen(Double.class::isInstance, x -&gt; &quot;Double: &quot; + x)<br />
+                   .otherwise(x -&gt; &quot;got this object: &quot; + x);</p>
+<p>    assertThat(pm.matches(&quot;world&quot;)).isEqualTo(Optional.of(&quot;Hello, world&quot;));<br />
+    assertThat(pm.matches(&quot;foo&quot;)).isEqualTo(Optional.of(&quot;got this object: foo&quot;));<br />
+    assertThat(pm.matches(1.42)).isEqualTo(Optional.of(&quot;Double: 1.42&quot;));<br />
+[/code]</p>
+<p>J'espère vous avoir convaincu que faire du <strong>pattern matching</strong> en Java 8 n'est pas une difficulté insurmontable, et c'est au passage l'occasion de jouer avec les nouveautés de Java 8 !</p>

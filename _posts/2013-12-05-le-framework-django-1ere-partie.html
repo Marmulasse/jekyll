@@ -1,0 +1,106 @@
+---
+layout: post
+title: Le framework Django - 1ère partie
+date: 2013-12-05 11:56:04.000000000 +01:00
+type: post
+published: true
+status: publish
+categories:
+- Outils
+- Programmation
+tags:
+- django
+- python
+meta:
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/mz957bc
+  sfw_pwd: ZcFqXbqOOExW
+  _edit_last: '1'
+  _twitterrelated_short_urlHash: 4c6a6cdbb09b3f1958cdf925f88e6d68
+  _wpcom_is_markdown: '1'
+author:
+  login: mickael barroux
+  email: mickael.barroux@arolla.fr
+  display_name: Mickaël Barroux
+  first_name: Mickaël
+  last_name: Barroux
+---
+<h2 style="text-align: justify;"><span style="color: #0000ff;"><strong>Django c’est quoi ?</strong></span></h2>
+<h2 style="text-align: justify;"><img class="alignright" alt="" src="{{ site.baseurl }}/assets/tYMSSwMQAAAABJRU5ErkJggg==" width="146" height="66" /></h2>
+<p style="text-align: justify;">Django (nommé en référence au célèbre guitariste manouche Django Reinhardt) est un framework WEB opensource basé sur le langage Python et qui respecte le modèle MVC (MTC avec son moteur de templates pour gérer la vue).</p>
+<p style="text-align: justify;">Il a été développé initialement par deux développeurs pour un journal local du Kansas, puis publié sous licence BSD en 2005.</p>
+<p style="text-align: justify;">Depuis 2005, grâce à une forte communauté de passionnés et la Django Software Foundation (depuis 2008), le framework a rencontré un succès grandissant auprès de nombreux développeurs cherchant à réaliser rapidement des sites robustes et de qualité (son slogan : « Le framework web pour les perfectionnistes sous pression »).</p>
+<h2 style="text-align: justify;"><span style="color: #0000ff;"><strong>Python à la base</strong></span></h2>
+<p style="text-align: justify;">La base de Django est le langage Python (en hommage à la troupe des « Monty Python »), dont la première version est sortie en 1991 grâce à Guido van Rossum.</p>
+<p style="text-align: justify;"><img alt="" src="{{ site.baseurl }}/assets/wCaOmGhnIPvsQAAAABJRU5ErkJggg==" />Il s’agit d’un langage objet interprété, à la fois riche, puissant et assez facile à appréhender, grâce notamment à une syntaxe claire et lisible (indentation définissant la structure logique du code, modules simplifiés, etc…).</p>
+<p style="text-align: justify;">Seul, il permet de créer rapidement des scripts exécutés dans sa console, ou à l’aide de bibliothèques (très nombreuses, d’ailleurs mon Twitter est pollué par toutes les nouvelles mises à jour de ces bibliothèques !) de créer des programmes complets (interfaces graphiques, programmes, etc…) ou des sites WEB à l’aide de frameworks tels que Django ou TurboGears.</p>
+<p style="text-align: justify;">La version courante de Django (1.5) supporte les versions 2.6 et supérieures ainsi que la version 3 de Python.</p>
+<h2 style="text-align: justify;"><span style="color: #0000ff;"><strong>J’ai envie d’essayer mais comment je l’installe ?</strong></span></h2>
+<p style="text-align: justify;">Afin de pouvoir utiliser ce merveilleux framework J, nous avons besoin d’installer :</p>
+<p style="text-align: justify;">-          Python (je vous avais prévenus)</p>
+<p style="text-align: justify;">-          PIL (Python Imaging Library) : librairie qui permet de gérer les images en Python</p>
+<p style="text-align: justify;">-          Un gestionnaire de base de données (MySQL, Oracle, SQLite…)</p>
+<p style="text-align: justify;">Nous allons utiliser <a href="http://www.sqlite.org/">SQLite</a> qui est suffisant pour cet article (très rapide à mettre en place).</p>
+<h4 style="text-align: justify;"><span style="color: #999999;"><strong><em>Debian</em></strong></span></h4>
+<p style="text-align: justify; padding-left: 60px;"><span style="color: #000000;">1. Il suffit d’installer les packages cités :</span></p>
+<div style="text-align: justify; padding-left: 60px;">
+<p style="padding-left: 60px;"><code>$ sudo apt-get install python python-imaging python-pysqlite2 sqlite3</code></p>
+<p>2. Puis de télécharger la dernière version disponible de Django : <a href="https://www.djangoproject.com/download/">https://www.djangoproject.com/download/</a></p>
+</div>
+<div style="text-align: justify; padding-left: 60px;">3. Ensuite décompresser l’archive téléchargée et à l’intérieur du dossier Django-1.5.X, lancez cette commande (tout est expliqué sur le site de Django) :</div>
+<div style="text-align: justify; padding-left: 60px;">
+<p style="padding-left: 60px;"><code>$ sudo python setup.py install</code></p>
+</div>
+<h4 style="text-align: justify;"><span style="color: #999999;"><strong><em>Windows</em></strong></span></h4>
+<p style="text-align: justify; padding-left: 60px;">1. Pour commencer, il faut installer Python (EXE version 2.7.5 installé ici) : <a href="http://www.python.org/download/">http://www.python.org/download/</a></p>
+<p style="text-align: justify; padding-left: 60px;">2. Ensuite, modifier la variable d’environnement PATH (clic droit sur poste de travail / ordinateur -&gt; propriétés -&gt; paramètres systèmes avancés) afin d’ajouter à la fin de la ligne les chemins de Python et Django (attention à la version de Python) :</p>
+<div style="text-align: justify;">
+<p style="padding-left: 120px;"><code>mes_paths_existants_deja;C:\Python27;C:\Python27\Lib\site-packages\django\bin</code></p>
+<p style="padding-left: 60px;">3. Ensuite télécharger puis décompresser l’archive de la dernière version disponible de Django : <a href="https://www.djangoproject.com/download/">https://www.djangoproject.com/download/</a></p>
+<p style="padding-left: 60px;">4. Dans l’invite de commandes Windows (Exécuter -&gt; cmd), placez-vous dans le répertoire de décompression de Django puis lancer la commande d’installation :</p>
+</div>
+<div style="text-align: justify;">
+<p style="padding-left: 120px;"><code>$ python setup.py install</code></p>
+<p style="padding-left: 60px;">5. Pour installer PIL, un exécutable à télécharger fera l’affaire : <a href="http://effbot.org/media/downloads/PIL-1.1.7.win32-py2.7.exe">http://effbot.org/media/downloads/PIL-1.1.7.win32-py2.7.exe</a></p>
+</div>
+<h4 style="text-align: justify;"><span style="color: #999999;"><em><strong>Intégration</strong></em></span></h4>
+<p style="text-align: justify;">Django s’intègre très bien à la majorité des IDE du marché, tels qu’Eclipse, Netbeans ou PyCharm par exemple. Ces IDE facilitent l'écriture de code au niveau syntaxique. Ils offrent aussi des interfaces à partir desquelles on peut lancer <a href="https://docs.djangoproject.com/en/dev/ref/django-admin/">les commandes propres à Django</a>, démarrer le serveur en mode debug avec des points d’arrêt, etc…</p>
+<h2 style="text-align: justify;"><span style="color: #0000ff;"><strong>Pourquoi utiliser Django ?</strong></span></h2>
+<p style="text-align: justify;">Django présente de nombreuses qualités qui rendent le développement web rapide et assez simple. Nous allons passer en revue les principales, cette liste n’étant évidemment pas exhaustive.</p>
+<h4 style="text-align: justify;"><span style="color: #999999;"><em><strong>Authentification et gestion des utilisateurs</strong></em></span></h4>
+<p style="text-align: justify;">Le framework propose un système de gestion des utilisateurs assez complet et configurable en natif.</p>
+<p style="text-align: justify;">L’authentification de base, plus générique, se fait à partir d'un ensemble d'utilisateurs stocké en base et des mots de passe hashés selon l’algorithme de cryptage choisi lors de la configuration (MD5, SHA-1, bcrypt, etc… + sel), dans le fichier settings.py. Pour des besoins spécifiques, il est également possible d'intégrer d’autres modes d’authentification, comme par exemple les tokens OAuth (standard d’authentification par API utilisé par exemple sur Twitter, Facebook, Google…).</p>
+<p style="text-align: justify;">En outre, Django permet de gérer les permissions de chaque utilisateur, soit à travers son groupe d’appartenance, comme on le trouve dans les systèmes Unix, soit directement via ses propres droits (configurables via l’administration générée par Django).</p>
+<p style="text-align: justify;"><img alt="" src="{{ site.baseurl }}/assets/v8DYPcWKByQr4sAAAAASUVORK5CYII=" /></p>
+<p style="text-align: justify;">De nombreux décorateurs permettent de tester (dans les contrôleurs et dans les vues) si l’utilisateur est authentifié et s’il a les permissions nécessaires pour accéder à une ressource.</p>
+<p style="text-align: justify;">Pour aller plus loin : <a href="https://docs.djangoproject.com/en/dev/topics/auth/">https://docs.djangoproject.com/en/dev/topics/auth/</a></p>
+<h4 style="text-align: justify;"><span style="color: #999999;"><strong><em>Système de templates</em></strong></span></h4>
+<p style="text-align: justify;">Diango offre un moteur de templates très puissant qui tire sa richesse des nombreux tags fournis avec le framework. Un langage d’expression est utilisé afin de gérer toute la logique d’affichage dans les pages HTML : boucles for, if / elsif / else, et d’autres filtres d’affichage récurrents qui rendent le développement plus rapide.</p>
+<p style="text-align: justify;">Il est notamment intéressant de définir un template de base (« main layout ») pour toutes les pages de l’application afin de les structurer toutes de la même manière : blocs statiques HTML (header, footer, barre de navigation…), inclusions des fichiers CSS, JS, etc…</p>
+<p style="text-align: justify;">Ensuite toutes les pages de l’application héritent de ce template et définissent uniquement le contenu de la page en elle-même (dans l’exemple ci-dessous le bloc nommé « content »)</p>
+<p style="text-align: justify;"><span style="text-decoration: underline;">Exemple :</span></p>
+<div style="text-align: justify;">
+<p style="padding-left: 60px;"><code>{% extends "base.html" %}</code></p>
+<p style="padding-left: 60px;"><code>{% load i18n %}</code></p>
+<p style="padding-left: 60px;"><code>{% block title %}{% trans "User list" %}{% endblock %}</code></p>
+<p style="padding-left: 60px;"><code>{% block content %}</code></p>
+<p style="padding-left: 60px;"><code>&lt;h1&gt;{% trans "User list" %}&lt;/h1&gt;</code></p>
+<p style="padding-left: 60px;"><code>&lt;ul&gt;</code></p>
+<p style="padding-left: 60px;"><code>{% for user in user_list %}</code></p>
+<p style="padding-left: 60px;"><code>&lt;li&gt;{{ user.first_name }} {{ user.last_name }}&lt;/li&gt;</code></p>
+<p style="padding-left: 60px;"><code>{% endfor %}</code></p>
+<p style="padding-left: 60px;"><code>&lt;/ul&gt;</code></p>
+<p style="padding-left: 60px;"><code>{% if user.is_authenticated %}</code></p>
+<p style="padding-left: 60px;"><code>&lt;a href="{% url 'home' %}"&gt;{% trans "Back to home" %} {{ user.username }}&lt;/a&gt;</code></p>
+<p style="padding-left: 60px;"><code>{% else %}</code></p>
+<p style="padding-left: 60px;"><code>&lt;a href="{% url 'home' %}"&gt;{% trans "Back to home" %}&lt;/a&gt;</code></p>
+<p style="padding-left: 60px;"><code>{% endif %}</code></p>
+<p style="padding-left: 60px;"><code>{% endblock content %}</code></p>
+</div>
+<p style="text-align: justify;">Pour aller plus loin : <a href="https://docs.djangoproject.com/en/dev/ref/templates/builtins/">https://docs.djangoproject.com/en/dev/ref/templates/builtins/</a></p>
+<h4 style="text-align: justify;"><em><strong><span style="color: #999999;">i18n : késako ?</span></strong></em></h4>
+<p style="text-align: justify;">L’internationalisation, c'est-à-dire la version multilingue de notre application, est assez simple à mettre en place : il suffit d’utiliser des tags spécifiques du moteur de templates. En haut de chaque page HTML, on charge le module d’internationalisation appelé « i18n », puis on peut utiliser les balises « trans » pour traduire les chaînes de caractères. Le moteur se charge tout seul de chercher leur traduction dans la langue cible.</p>
+<p style="text-align: justify;">Le lancement de la commande Django « makemessages » permet de récolter dans toute l’application les chaînes de caractères utilisées. Il suffit ensuite de compléter pour chaque langue, la traduction associée à chaque chaîne puis de lancer la commande « compilemessages » et le tour est joué !<b></b></p>
+<p style="text-align: justify;">Pour aller plus loin : <a href="https://docs.djangoproject.com/en/dev/topics/i18n/">https://docs.djangoproject.com/en/dev/topics/i18n/</a></p>
+<p style="text-align: justify;">Dans cette première partie, nous avons donc découvert le framework Django qui est basé sur Python, la façon de l’installer et de l’intégrer à votre IDE favori.</p>
+<p style="text-align: justify;"><a href="http://www.arolla.fr/blog/2013/12/le-framework-django-2e-partie/">Dans la 2ème partie de l’article</a>, nous allons détailler les points forts de ce framework et ce qui le rend si intéressant à utiliser dans le développement WEB.</p>

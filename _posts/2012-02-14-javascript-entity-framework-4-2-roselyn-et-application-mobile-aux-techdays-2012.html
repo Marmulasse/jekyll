@@ -1,0 +1,83 @@
+---
+layout: post
+title: TechDays 2012 - Javascript, Entity Framework 4.2, Roslyn et application mobile
+date: 2012-02-14 10:58:28.000000000 +01:00
+type: post
+published: true
+status: publish
+categories:
+- Actu
+- Evénements
+tags:
+- développement
+- javascript
+- mobile
+- TechDays
+meta:
+  _edit_last: '1'
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/cljtjrn
+  _twitterrelated_short_urlHash: f5eccda98313d645257a1e18343f11e8
+  sfw_pwd: dcEUiB34cbWs
+author:
+  login: samuel dufour
+  email: samuel.dufour@arolla.fr
+  display_name: Samuel
+  first_name: Samuel
+  last_name: Dufour
+---
+<h1 style="text-align: justify;"><img src="{{ site.baseurl }}/assets/wcSStkigUgY1gAAAABJRU5ErkJggg==" alt="" width="141" height="76" /></h1>
+<h1 style="text-align: justify;">Introduction</h1>
+<p style="text-align: justify;"> Comme chaque année depuis quelques années maintenant, j’ai eu la chance de pouvoir me rendre aux TechDays pendant les 3 jours durant lesquels ils se sont tenus.</p>
+<p style="text-align: justify;">C’est l’occasion pour moi d’assister à de nombreuses sessions techniques et de découvrir la façon de travailler, de penser et bien sûr de coder de gens plus talentueux les uns que les autres.<br />
+Parmi les sessions que j’ai pu voir, voici un petit condensé de celles qui m’ont paru les plus intéressantes.</p>
+<h2 style="text-align: justify;"></h2>
+<h2 style="text-align: justify;">Introduction à javascript</h2>
+<p style="text-align: justify;">A l’heure où Html5 est extrêmement populaire et où le développement web est donc très en vogue, tout développeur web se doit d’avoir une connaissance irréprochable de javascript sous peine de voir la moindre interaction côté client devenir un cauchemar à mettre en place.</p>
+<p style="text-align: justify;">Comme l’a très justement dit Jean-Pierre Vincent lors de cette session, javascript est différent.<br />
+Ce fait que nul développeur en langage objet ne saurait remettre en cause a été très bien mis en évidence en introduction de la session, avec des égalités/inégalités pour le moins surprenantes...</p>
+<p>La suite de la session a consisté principalement à mettre en évidence les notions de portée des variables, la manipulation des fonctions et la différence de comportement du « this » par rapport à un langage objet.</p>
+<p style="text-align: justify;">On apprend ainsi qu’il vaut toujours mieux déclarer ses variables avec le mot var, qu’il est toujours préférable d’utiliser des fonctions anonymes et d’éviter l’écriture function maFonction() (on lui préférera l’écriture var maFonction = function()) ou encore qu’il faut toujours stocker dans une variable le this au moment de son initialisation.</p>
+<p style="text-align: justify;">Enfin, les notions de module pattern et de namespace ont été évoquées.<br />
+Ceux-ci permettent de mieux structurer le code et de cloisonner les différentes parties évitant ainsi l’écrasement accidentel de variables. Ces 2 notions vont dans le sens d’une meilleure maintenabilité du code en organisant le code le rendant ainsi plus lisible.</p>
+<p style="text-align: justify;">Afin de clarifier tout cela, je ne peux que vous conseiller vivement de consulter le webcast de cette session dès qu’il sera disponible, courant mars.</p>
+<h2 style="text-align: justify;">De A à Z : accès aux données avec Entity Framework 4.2 et publication en OData</h2>
+<p style="text-align: justify;">Afin de garantir une interopérabilité optimale entre des clients de diverses natures et un service de manipulation de données, il est important de s’appuyer sur un standard de communication ouvert.</p>
+<p>C’est exactement ce qu’est OData et cette session nous propose donc de construire étape par étape un service de ce type s’appuyant sur Entity Framework 4.2.</p>
+<p style="text-align: justify;">Démarrant le projet entity framework avec une approche code first, la première étape consiste à créer les entités qui vont représenter nos données. Ces entités ne sont donc que des objets POCO (Plain Old CLR Object) qui ne contiennent que les propriétés correspondant aux données à manipuler.</p>
+<p style="text-align: justify;">La suite s’attarde sur la création de la base de données ainsi que sur la customisation des champs côté base de données par l’utilisation d’attributs (provenant du namespace DataAnnotations, donc non lié à EF) et sur les propriétés des objets POCO (longueur de champ en base, nullable ou non, etc…) mais également sur la customisation du mapping entre la base de données et le modèle objet (ex. : nom différent entre la base de données et l’objet).</p>
+<p style="text-align: justify;">On en vient ensuite à une présentation très intéressante d’une nouveauté de Entity Framework 4.3 qui concerne l’historisation des changements de schéma de la base de données.</p>
+<p>En effet, avant la version 4.3, lorsque des modifications entraînaient la modification du schéma de la base de données, il n’y avait pas d’autres alternatives que de supprimer la base de données pour la recréer. Avec EF 4.3, les changements de schéma sont historisés et exécutés sur la base de données, permettant ainsi de conserver les données.<br />
+Attention toutefois, tout n’est pas possible, certaines modifications du schéma ne permettant pas la mise à jour du schéma existant sans sa suppression. Entity Framework ne peut pas faire plus à ce niveau que ce que fait déjà Sql Server…</p>
+<p style="text-align: justify;">Enfin, on passe à l’essentiel, la création du service wcf exposant les données.<br />
+La simplicité de codage de ce service en surprendra surement plus d’un, celui-ci se limitant à créer une classe héritant de la classe générique DataService prenant en paramètre le DBContext précédemment créé.</p>
+<p style="text-align: justify;">Je vous invite à consulter le compte rendu suivant sur la même session qui vous donnera un aperçu supplémentaire de cette session : <a href="http://gouigoux.com/blog-fr/?p=327">http://gouigoux.com/blog-fr/?p=327</a></p>
+<h2 style="text-align: justify;">Etendez Visual Studio et .Net avec Roslyn</h2>
+<p style="text-align: justify;">Roslyn est un projet consistant à mettre à disposition les compilateurs C# et VB en exposant leurs API. Si on peut sentir que ce projet a du potentiel, il est difficile dans un premier temps de voir quelles pourraient en être les utilisations.</p>
+<p style="text-align: justify;">Cette session avait donc pour but de mettre en évidence les différentes utilisations possibles de Roslyn dans Visual Studio afin d’apporter de la valeur ajoutée à l’IDE.</p>
+<p>On y découvre ainsi qu’il est possible de faire de l’analyse de code à la volée.<br />
+Les personnes qui ont assisté à la session plénière du premier jour en ont d’ailleurs tous vu un exemple d’utilisation lorsque David Cathue a fait la démonstration de ses hauts faits.<br />
+En analysant le code tapé par le développeur, celui-ci reçoit une récompense pour avoir codé tel ou tel concept.</p>
+<p style="text-align: justify;">Pour enrichir l’analyse de code, il est également possible de proposer à l’utilisateur de faire des corrections ou des modifications de manière interactive.<br />
+Par exemple il pourrait être possible de valider des règles de codage, comme celles proposées par stylecop mais en direct, sans passer par une étape de compilation et dans la foulée de proposer une correction au développeur.</p>
+<p style="text-align: justify;">D’autres démonstrations sont faites telles que le scripting et la possibilité d’étendre le langage en customisant la compilation, mais je vous invite à suivre le webcast qui sera beaucoup plus parlant.</p>
+<p style="text-align: justify;">En attendant, vous pouvez toujours consulter l’article suivant écrit par Matthieu Mezil qui co-présentait cette session avec Lénoard Labat : <a href="http://msdn.microsoft.com/fr-fr/vcsharp/article-roslyn">http://msdn.microsoft.com/fr-fr/vcsharp/article-roslyn</a></p>
+<h2 style="text-align: justify;">La dure lutte du développeur : 10 trucs pratiques pour une application mobile bien léchée</h2>
+<p style="text-align: justify;">Très intéressé par le développement d’application sur Windows Phone et connaissant déjà les grands principes, je souhaitais suivre une session qui montre comment faire la différence au niveau de son application.</p>
+<p style="text-align: justify;">Cette session a été très riche et a bien montré la multitude de détails auxquels il faut être attentif pour faire la différence et donner aux utilisateurs une application qui leur convient parfaitement.</p>
+<p style="text-align: justify;">Tout d’abord, sur le plan graphique et ergonomique.<br />
+S'l est évident qu’une jolie application se démarquera d’une application terne, d’autres choses comme l’alignement des contrôles par exemple, ou encore le fait de ne pas cacher une partie des contrôles de saisie à l’affichage du clavier virtuel ont également leur importance.</p>
+<p style="text-align: justify;">Ensuite, sur l’aspect vie de l’application.<br />
+Il est primordial de bien gérer les différents états et changements d’état que peut rencontrer l’application. Quoi de plus désagréable, par exemple, que de saisir un grand nombre d’informations sur un formulaire, et de tout perdre parce que l’application est devenue inactive suite à un appel ?</p>
+<p style="text-align: justify;">De même, il est très important de faire un retour à l’utilisateur de ses différentes actions, par la mise en place de petites animations ou en affichant le busy indicator par exemple.<br />
+Sans cela, l’expérience utilisateur sera désagréable, l’utilisateur pensant que l’application est bloquée, ce qui va à l’encontre des bonnes pratiques dictant l’utilisation générale de l’asynchronisme.</p>
+<p style="text-align: justify;">Utiliser tout ce qui est disponible.<br />
+Les tuiles associées à votre application doivent être vivantes puisqu’elles sont une extension de votre application. Associées à un background worker qui sera chargé de mettre leur contenu à jour, elles permettent de rendre encore plus visible votre application.<br />
+Penser également au stockage de données dans le cloud, ce qui permettra à un utilisateur de récupérer ses données à tout moment.<br />
+Ne pas négliger l’interaction avec les utilisateurs en leur offrant la possibilité de noter l’application, en leur communiquant une adresse pour leurs retours, etc…</p>
+<p style="text-align: justify;">Une session très complète donc, dont je n’ai pas tout relaté. J’invite très vivement les développeurs Windows Phone à consulter le webcast, lorsqu’il sera disponible.</p>
+<h2 style="text-align: justify;">Conclusion</h2>
+<p style="text-align: justify;">Ces quelques sessions ne sont qu’un aperçu de ce qu’il est possible de voir aux TechDays.<br />
+C’est pour moi un évènement incontournable qui , rappelons le, est gratuit et concentre en quelques jours les acteurs majeurs du monde .NET.</p>
+<p style="text-align: justify;">Ils permettent également de rencontrer un nombre importants d’experts, qui transmettent leur savoir notamment au travers des sessions qui sont la plupart du temps d’une grande qualité.<br />
+Je vous invite une fois de plus à surveiller la sortie des webcasts des sessions de cette année et à consulter celles qui concernent vos sujets favoris !</p>

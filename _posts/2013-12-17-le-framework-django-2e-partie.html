@@ -1,0 +1,150 @@
+---
+layout: post
+title: Le framework Django - 2e partie
+date: 2013-12-17 08:00:48.000000000 +01:00
+type: post
+published: true
+status: publish
+categories:
+- Outils
+- Programmation
+tags:
+- django
+- python
+meta:
+  _edit_last: '1'
+  sfw_pwd: F8j3Kwu1hNIZ
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/ox2ve3a
+  _twitterrelated_short_urlHash: 33f7a0b175f2b0303e3a7d2e0f04632c
+  _wpcom_is_markdown: '1'
+author:
+  login: mickael barroux
+  email: mickael.barroux@arolla.fr
+  display_name: Mickaël Barroux
+  first_name: Mickaël
+  last_name: Barroux
+---
+<p><a href="http://www.arolla.fr/blog/2013/12/le-framework-django-1ere-partie/">(La première partie de cet article est ici)</a></p>
+<p style="text-align: justify;">Cette 2ème partie liste les aspects intéressants de Django et vous propose une bibliographie complète avec des exemples concrets d’implémentation.</p>
+<h2 style="text-align: justify;"><strong><span style="color: #0000ff;">Mapping relationnel-objet (ORM pour les intimes)</span></strong></h2>
+<p style="text-align: justify;">Avec Django, il suffit de définir des modèles qui mappent les objets Django avec les objets en base de données (« Object-relational mapping »). Ceci s'effectue à l’aide d’une syntaxe propre à Django.</p>
+<p style="text-align: justify;">Toutes les requêtes SQL du cycle de vie de ces objets sont ensuite générées automatiquement par Django.</p>
+<div style="text-align: justify;">
+<p style="padding-left: 60px;"><code>from django.db import models</code></p>
+<p style="padding-left: 60px;"><code>class Person(models.Model):</code></p>
+<p style="padding-left: 60px;"><code>first_name = models.CharField(max_length=30)</code></p>
+<p style="padding-left: 60px;"><code>last_name = models.CharField(max_length=30)</code></p>
+</div>
+<p style="text-align: justify;">Au lancement de la commande Django « syncdb », les ordres SQL suivants seront exécutés côté base de données :</p>
+<div style="text-align: justify;">
+<p style="padding-left: 60px;"><code>CREATE TABLE person (</code></p>
+<p style="padding-left: 60px;"><code>"id" serial NOT NULL PRIMARY KEY,</code></p>
+<p style="padding-left: 60px;"><code>"first_name" varchar(30) NOT NULL,</code></p>
+<p style="padding-left: 60px;"><code>"last_name" varchar(30) NOT NULL</code></p>
+<p style="padding-left: 60px;"><code>);<code></code></code></p>
+</div>
+<p style="text-align: justify;">Il est également possible d’ajouter des clefs étrangères, des relations de type ManyToMany, des listes de valeurs, etc…</p>
+<div style="text-align: justify;">
+<p style="padding-left: 60px;"><code>job = models.ForeignKey(Job, blank=True, null=True) # metier</code></p>
+<p style="padding-left: 60px;"><code>skills = models.ManyToManyField(Skill, blank=True, null=True) # competences</code></p>
+</div>
+<p style="text-align: justify;">Ces modèles peuvent également servir de base aux formulaires WEB (formulaire de création de compte par exemple) : ils permettent en effet d’utiliser des champs appropriés au type de données dans les formulaires.</p>
+<div style="text-align: justify;">
+<p style="padding-left: 60px;"><code>from django.forms import ModelForm</code></p>
+<p style="padding-left: 60px;"><code>from models import Person</code></p>
+<p style="padding-left: 60px;"><code>class PersonForm(ModelForm):</code></p>
+<p style="padding-left: 60px;"><code>class Meta:</code></p>
+<p style="padding-left: 60px;"><code>model = Person</code></p>
+</div>
+<p style="text-align: justify;">Aucun besoin d’écrire des requêtes SQL pour filtrer ces objets, il suffit d’utiliser le langage de requête propriétaire de Django (à la manière d’Hibernate qui possède sa propre syntaxe HQL).</p>
+<p style="text-align: justify;">Par exemple, pour récupérer la liste des personnes se prénommant « Jean » :</p>
+<div style="text-align: justify;">
+<p style="padding-left: 60px;"><code>person_list = Person.objects.filter(first_name="jean")</code></p>
+<p style="padding-left: 60px;"><code>for person in person_list:</code></p>
+<p>...</p>
+</div>
+<p style="text-align: justify;">Une des forces de Django est donc de partir du modèle de conception et de générer tous les éléments du projet : c'est-à-dire le code SQL, l’interface d'administration des objets, les formulaires pour ces modèles, etc… pour que tout soit centralisé dans le code, rendant l’ensemble cohérent et plus simple à maintenir. Ainsi, toute modification sur le modèle entraîne automatiquement des modifications sur la base de données, les formulaires WEB, l’interface d’administration, etc…</p>
+<p style="text-align: justify;">Pour aller plus loin : <a href="https://docs.djangoproject.com/en/dev/topics/db/models/">https://docs.djangoproject.com/en/dev/topics/db/models/</a></p>
+<h2 style="text-align: justify;"><strong><span style="color: #0000ff;">Module d’administration</span></strong></h2>
+<p style="text-align: justify;">Comme indiqué précédemment, Django génère également pour vous tout un module d’administration des différents éléments définis dans les modèles, qui vous permet, une fois connecté, d’ajouter, d'éditer, de supprimer, de lister, de rechercher des données issues de vos modèles.</p>
+<p style="text-align: justify;">Exemple de page d’administration générée à partir du modèle précédent :</p>
+<p style="text-align: justify; padding-left: 60px;"><span style="text-decoration: underline;">admin.py :</span></p>
+<div style="text-align: justify; padding-left: 60px;">
+<p style="padding-left: 60px;"><code>from django.contrib import admin</code></p>
+<p style="padding-left: 60px;"><code>from models import Person</code></p>
+<p style="padding-left: 60px;"><code>class PersonAdmin(admin.ModelAdmin):</code></p>
+<p style="padding-left: 60px;"><code>search_fields = ['firstname', 'lastname']</code></p>
+<p style="padding-left: 60px;"><code>filter_horizontal = ("skills",)</code></p>
+<p style="padding-left: 60px;"><code>admin.site.register(Person, PersonAdmin)</code></p>
+</div>
+<p style="text-align: justify;"><span style="text-decoration: underline;"> </span></p>
+<p style="text-align: justify; padding-left: 60px;"><span style="text-decoration: underline;">IHM générée par Django (http://localhost/admin/) :</span></p>
+<p style="text-align: justify; padding-left: 60px;"><img alt="" src="{{ site.baseurl }}/assets/7XyHx2h5ofiAAAAAElFTkSuQmCC" /></p>
+<p style="text-align: justify;">De nombreuses options de configuration sont disponibles pour personnaliser l’affichage, exclure certains champs, changer les widgets, modifier les CSS, etc…</p>
+<p style="text-align: justify;">Pour aller plus loin : <a href="https://docs.djangoproject.com/en/dev/ref/contrib/admin/">https://docs.djangoproject.com/en/dev/ref/contrib/admin/</a></p>
+<h2 style="text-align: justify;"><span style="color: #0000ff;"><strong>Gestion des URL</strong></span></h2>
+<p style="text-align: justify;">Django permet de gérer facilement le point d’entrée d'une application WEB que sont les URL. En effet, à partir d’un fichier de configuration nommé « urls.py », il définit des patterns d’URL (« URL mapping ») à l’aide d’expressions régulières qui redirigent la requête vers tel ou tel contrôleur.</p>
+<p style="text-align: justify;">On peut passer des paramètres aux contrôleurs (exemple ci-dessous avec <i>people_id</i>), utiliser des valeurs soumises à travers des formulaires (dans <i>request.POST</i> dans le contrôleur), etc…</p>
+<p style="text-align: justify;">Les noms donnés aux URL sont repris dans les templates HTML. Par exemple la forme suivante : <i>{% url 'about' %}</i> sera traduite par le gestionnaire de templates en <i>http://mondomaine.com/about/</i>.</p>
+<div style="text-align: justify;">
+<p style="padding-left: 90px;"><code># coding=utf-8</code></p>
+<p style="padding-left: 90px;"><code>from django.conf.urls import patterns, include, url</code></p>
+<p style="padding-left: 90px;"><code>from django.conf.urls.static import static</code></p>
+<p style="padding-left: 90px;"><code>from .views import *</code></p>
+<p style="padding-left: 90px;"><code>from django.contrib import admin</code></p>
+<p style="padding-left: 90px;"><code>from django.conf import settings</code></p>
+<p style="padding-left: 90px;"><code>admin.autodiscover()</code></p>
+<p style="padding-left: 90px;"><code>urlpatterns = patterns('',</code></p>
+<p style="padding-left: 90px;"><code>url(r'^$',  home, name='home'),</code></p>
+<p style="padding-left: 90px;"><code>#Institutional pages</code></p>
+<p style="padding-left: 90px;"><code>url(r'^about/$',  about, name='about'),</code></p>
+<p style="padding-left: 90px;"><code>url(r'^team/$',  team, name='team'),</code></p>
+<p style="padding-left: 90px;"><code># gestion des personnes</code></p>
+<p style="padding-left: 90px;"><code>url(r'^people/$', classify_in_list, name='classify_in_list'),</code></p>
+<p style="padding-left: 90px;"><code>url(r'^people/remove/(?P&lt;people_id&gt;[0-9]+)/$', remove_people, name='remove_people'),</code></p>
+<p style="padding-left: 90px;"><code>url(r'^people/add/(?P&lt;people_id&gt;[0-9]+)/$', add_people, name='add_people'),</code></p>
+<p style="padding-left: 90px;"><code>url(r'^ people/show/(?P&lt;people_id&gt;[0-9]+)/$', people_details, name='people_details'),</code></p>
+<p style="padding-left: 90px;"><code># admin</code></p>
+<p style="padding-left: 90px;"><code>url(r'^admin/', include(admin.site.urls)),</code></p>
+<p style="padding-left: 90px;"><code>)</code></p>
+<p style="padding-left: 90px;"><code># gestion des ressources media</code></p>
+<p style="padding-left: 90px;"><code>urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)</code></p>
+<p style="padding-left: 90px;"><code># internationalisation</code></p>
+<p style="padding-left: 90px;"><code>urlpatterns += patterns('',</code></p>
+<p style="padding-left: 90px;"><code>url(r'^i18n/', include('django.conf.urls.i18n')),</code></p>
+<p style="padding-left: 90px;"><code>)</code></p>
+</div>
+<p style="text-align: justify;">Pour aller plus loin : <a href="https://docs.djangoproject.com/en/dev/topics/http/urls/">https://docs.djangoproject.com/en/dev/topics/http/urls/</a></p>
+<h2 style="text-align: justify;"><strong><span style="color: #0000ff;">Exceptions et débogage</span></strong></h2>
+<p style="text-align: justify;">Les exceptions et stacktraces Python sont bien gérées sous Django. Elles permettent de déboguer aisément les applications WEB grâce à un paramètre de configuration global « Debug=True|False ». En mode debug, à chaque erreur, l’ensemble des variables d’environnement et du code ayant provoqué l’exception sont tracés à l’écran, tandis qu’en mode « non-debug », une page 404 ou 500 est affichée (environnement de production par exemple).</p>
+<p style="text-align: justify;"><span style="text-decoration: underline;">Exemple</span> (erreur dans l’URL) :</p>
+<p style="text-align: justify;"><img alt="" src="{{ site.baseurl }}/assets/Aw0jRwZHhG9XAAAAAElFTkSuQmCC" /></p>
+<p style="text-align: justify;">D’autres fonctionnalités peuvent être ajoutées, grâce au plugin django-debug-toolbar qui permet de visualiser le temps d’exécution des requêtes AJAX, des requêtes SQL côté serveur, etc…</p>
+<p style="text-align: justify;">Django possède un serveur d’applications natif qu’on peut lancer avec la commande Django « runserver », qui permet de déployer instantanément les sites en cours de développement. Il est également assez facile de tester du code (et notamment en debug) sans même avoir besoin de redéployer !</p>
+<p style="text-align: justify;">Pour aller plus loin : <a href="https://docs.djangoproject.com/en/dev/ref/exceptions/">https://docs.djangoproject.com/en/dev/ref/exceptions/</a></p>
+<h2 style="text-align: justify;"><strong><span style="color: #0000ff;">Tout est fait pour vous aider !</span></strong></h2>
+<p style="text-align: justify;">Comme vous avez pu le constater dans les différents points précédents, de nombreux compléments d’informations sont disponibles à propos de Django pour les développeurs, notamment sur le site de la documentation officielle du projet : <a href="https://docs.djangoproject.com/">https://docs.djangoproject.com</a></p>
+<p style="text-align: justify;">Ce framework est également doté d’une communauté assez forte de développeurs passionnés qui continue d'améliorer le framework pour le rendre toujours plus riche afin de rendre le développement web toujours plus simple et rapide (une version majeure releasée tous les ans).</p>
+<p style="text-align: justify;"><a href="https://www.djangoproject.com/community/">https://www.djangoproject.com/community/</a></p>
+<p style="text-align: justify;"><a href="http://www.django-fr.org/">http://www.django-fr.org/</a></p>
+<p style="text-align: justify;"><a href="http://www.djangobook.com/">http://www.djangobook.com</a></p>
+<h2 style="text-align: justify;"><strong><span style="color: #0000ff;">De nombreux packages à disposition</span></strong></h2>
+<p style="text-align: justify;">Une des forces de Django est également de disposer de nombreuses applications tierces qui permettent de palier certaines problématiques récurrentes (gestion de calendrier, réseaux sociaux, arborescences, images miniatures, CMS, etc…).</p>
+<p style="text-align: justify;">Ces packages sont très facilement intégrables grâce à des outils d’installation et de gestion de packages tels que pip ou easy_install, qui utilisent des dépôts officiels de packages tels que pypi (intégrés aux IDE) : <a href="https://pypi.python.org/pypi/">https://pypi.python.org/pypi/</a></p>
+<h2 style="text-align: justify;"><strong><span style="color: #0000ff;">Tout n’est pas rose</span></strong></h2>
+<p style="text-align: justify;">Ce framework possède également certaines faiblesses, notamment le fait de ne pas intégrer d’AJAX côté client WEB ou de ne pas gérer les migrations lors des modifications des modèles de données.<img class="alignright" alt="" src="{{ site.baseurl }}/assets/H66o2kAf1BmQAAAAAElFTkSuQmCC" width="117" height="88" /></p>
+<p style="text-align: justify;">Pour l’AJAX, c’est un choix de l’équipe de développement qui considère que c’est au développeur de choisir la librairie AJAX qui lui convient côté client (jQuery, MooTools, Prototype, dojo…).</p>
+<p style="text-align: justify;">Pour les migrations de modèles de données, c’est plus ennuyeux. Heureusement, un package tierce nommé South permet de gérer ce genre de problématiques et est d’ailleurs très répandu sur les projets Django aujourd’hui. En attendant peut-être un outil natif pour Django 1.7…</p>
+<p style="text-align: justify;">Il est également légèrement plus complexe de déployer un projet en production sous Django par rapport à un projet PHP par exemple, car il nécessite un Apache avec un module WSGI pour s’exécuter et quelques étapes de configuration sur le serveur. Mais rien de bien méchant et de nombreux guides sont là pour vous aider dans cette tâche : <a href="https://docs.djangoproject.com/en/dev/howto/deployment/">https://docs.djangoproject.com/en/dev/howto/deployment/</a></p>
+<h2 style="text-align: justify;"><strong><span style="color: #0000ff;">Lancez-vous !</span></strong></h2>
+<p style="text-align: justify;"><img alt="" src="{{ site.baseurl }}/assets/AZTbn9YE8DzwAAAAAElFTkSuQmCC" />Django est fait pour vous si vous aimez développer rapidement et simplement des applications Web 2.0 robustes et modulaires.</p>
+<p style="text-align: justify;">La montée en compétences sur ce framework est très rapide et permet de gagner un temps précieux sur vos projets (productivité excellente), tout en conservant une qualité de code et une modularité très importante.</p>
+<p style="text-align: justify;">De plus, vous pouvez vous appuyer sur une documentation riche et une communauté toujours prête à vous aider alors, pourquoi ne pas vous lancer ?</p>
+<h2 style="text-align: justify;"><strong><span style="color: #0000ff;">Des cas pratiques</span></strong></h2>
+<p style="text-align: justify;">Code source de l’exemple : <a href="https://github.com/mbarroux/django_arolla_example">https://github.com/mbarroux/django_arolla_example</a><a href="https://code.djangoproject.com/wiki/Tutorials"><img class="alignright" alt="" src="{{ site.baseurl }}/assets/l1+OHztW1zdV96rv2BpUrhqwRaUasEWlGrBFpRqwRaUasEWlGrBFpRqwRaUasEWlGrBFpRqwRaUasEWlGrBFpRqwRaUasEWlGrBFpRqwRaUasEWlGrBFpRqwRaX+HyIShL+3+qCMAAAAAElFTkSuQmCC" width="146" height="146" /></a></p>
+<p style="text-align: justify;">Travaux pratiques : <a href="http://django-story.readthedocs.org/en/latest/#intro-tutorial02">http://django-story.readthedocs.org/en/latest/#intro-tutorial02</a></p>
+<p style="text-align: justify;">Le site du zéro : <a href="http://fr.openclassrooms.com/informatique/cours/developpez-vos-applications-web-avec-django">http://fr.openclassrooms.com/informatique/cours/developpez-vos-applications-web-avec-django</a></p>
+<p style="text-align: justify;">Documentation et tutoriels : <a href="http://docs.django-fr.org/index.html">http://docs.django-fr.org/index.html</a></p>
+<p style="text-align: justify;">Tutoriels : <a href="https://code.djangoproject.com/wiki/Tutorials">https://code.djangoproject.com/wiki/Tutorials</a></p>
+<p style="text-align: justify;">Retour d’expérience d’un ex-PHP : <a href="http://www.miximum.fr/methodes-et-outils/1300-python-et-django-retour-dexperience-apres-deux-ans">http://www.miximum.fr/methodes-et-outils/1300-python-et-django-retour-dexperience-apres-deux-ans</a></p>

@@ -1,0 +1,103 @@
+---
+layout: post
+title: Javascript et les fonctions
+date: 
+type: post
+published: false
+status: draft
+categories:
+- Non classé
+tags: []
+meta:
+  _twitterrelated_short_urlHash: 9892fe26be2b062685151bb0f3e0aecb
+  _activeshortener: tiny
+  _twitterrelated_short_url: http://tinyurl.com/p797qe9
+  _wpcom_is_markdown: '1'
+  _edit_last: '4'
+  sfw_pwd: dLyTHslI7fm1
+author:
+  login: didier cauvin
+  email: didier.cauvin@arolla.fr
+  display_name: didier cauvin
+  first_name: Didier
+  last_name: Cauvin
+---
+<p>La bonne maîtrise des fonctions est essentielle en javascript, étant donnée leur large utilisation. Dans cet article, je vais essayer de montrer les différentes manières de définir une fonction.</p>
+<h1>Qu'est-ce qu'une fonction?</h1>
+<p>La question peut paraître simple, mais en javascript, rien ne l'est (troll inside)! Ce qu'il faut retenir d'une fonction, c'est que c'est un objet qui peut-être exécuté. Pourquoi un objet? Car une fonction, au même titre qu'un literal, possède des attributs et des méthodes :</p>
+<p><code>function foo() {<br />
+}</p>
+<p>foo.a = 'a';</p>
+<p>foo.bar = function() {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;// do something<br />
+}</p>
+<p>foo.test = function() {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;//do other thing<br />
+}</p>
+<p>for (var o in foo) {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;console.log(o);<br />
+}</code></p>
+<p>Ou bien tout simplement :<br />
+<code>function add(a, b, c) {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return a + b;<br />
+}</p>
+<p>console.log(add.length);</code></p>
+<p>Vous pouvez aussi définir une fonction en passant par la fonction constructeur Function :</p>
+<p><code>var foo = new Function('param', "return console.log('Hello ' + param)");<br />
+foo('foo'); // 'Hello foo'</code></p>
+<p>En général, on ne définit pas une fonction comme ceci. C'est fastidieux car il faut faire attention aux quotes et indenter le corps de la fonction peut se révéler extrêmement pénible. Et en terme de sécurité, c'est pas terrible car on passe une chaîne de caractères qui va être évaluée juste après. Bof bof...</p>
+<h1>Le nommage</h1>
+<p>Une fonction peut-être anonyme ou nommée. Cela signifie donc qu'on n'est pas obligé de donner un nom à une fonction.</p>
+<p><code>var foo = function () {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;console.log("Where the function has no name...");<br />
+}</p>
+<p>var bar = function bar () {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;console.log("I'm bar!");<br />
+}</code></p>
+<p>Dans le cas d'une expression de fonction (à définir), cela peut ne pas être trop important, sauf pour le debuggage, où avoir le nom de la fonction peut être utile! En revanche, dans le cas d'une déclaration de fonction, si on ne donne pas de nom, ça va être un peu plus compliqué pour l'utiliser. C'est pourquoi on doit en donner un.</p>
+<p><code>function foo()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;console.log("I'm a function called foo!");<br />
+}</code></p>
+<p>On peut très bien passer une fonction en paramètre d'une autre, qu'elle soit nommée ou non.</p>
+<p><code>function executeFunction(f) {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;f(); // execute the function<br />
+}</p>
+<p>executeFunction(function() {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;console.log('Hello, my name is anonymous!');<br />
+});</p>
+<p>executeFunction(function foo() {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;console.log('Hello, my name is foo!');<br />
+});<br />
+</code></p>
+<h1>La portée</h1>
+<p>Ce qu'il faut retenir aussi d'une fonction, c'est qu'elle fournit une portée. J'ai déjà discuté de la portée dans <a href="http://www.arolla.fr/blog/2015/07/javascript-et-le-hoisting/">cet article</a>. En gros, la portée d'une variable est soit globale, soit liée à la fonction où celle-ci a été définie.</p>
+<p><code>function foo() {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;var a = "I'm a foo";<br />
+&nbsp;&nbsp;&nbsp;&nbsp;console.log(a);<br />
+}</p>
+<p>foo(); // I'm foo<br />
+console.log(a);// a is not defined</code></p>
+<p>Attention cependant à un détail qui peut avoir son importance. Il n'existe pas d'autre type de portée possible en javascript. Prenons l'exemple suivant :<br />
+<code>function add(a, b) {<br />
+    if (a !== 2) {<br />
+        var c = 3 * a;<br />
+    }</p>
+<pre><code>return a + c;
+</code></pre>
+<p>}</p>
+<p>console.log(add(1, 2));</code></p>
+<p>On pourrait penser, comme pour le langage C#, que la portée de la variable c est le if. Sauf qu'en fait non, car le résultat de la fonction renvoie bien un résultat. Comme je l'ai décrit dans <a href="http://www.arolla.fr/blog/2015/07/javascript-et-le-hoisting/">cet article</a>, l'interpréteur va remonter la déclaration de la variable c en début de fonction, puis effectuera son initialisation dans le if. En revanche, si on prend l'exemple ci-après :</p>
+<p><code>function add(a, b) {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;var initC = function() {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var c = 3 * a;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;}</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;initC();</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;return a + c;<br />
+}</p>
+<p>console.log(add(1, 2));</code></p>
+<p>On obtient une jolie erreur qu'on rencontre souvent en javascript : "Uncaught ReferenceError: c is not defined". Tout ça parce que la portée de la variable c est la fonction initC.</p>
+<h1>Les fermetures (ou closures)</h1>
+<p>Le code précédent est un exemple de fermeture. Il s'agit de définir une fonction à l'intérieur d'une autre (définition à revoir). En faisant ainsi, on ne perd pas la référence à la fonction, ce qui signifie qu'on continuer à utiliser la fonction tranquillement en dehors de la portée initiale. Voici un exemple :</p>
+<p><code></code></p>
+<h1>Conclusion</h1>
+<p>En gros, on peut faire plein de choses avec les fonctions, c'est magique!</p>
